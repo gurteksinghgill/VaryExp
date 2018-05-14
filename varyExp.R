@@ -8,11 +8,11 @@ t <- round(100/tau)*tau                                        #time at which ev
 xi0 <- matrix(0,round(2*xmax/chi + 1), round(vmax/tau + 1))
 xi0[round(xmax/chi + 1), 1] <- 1                              #Initial condition
 xi <- xi0                                                     #iterate xi instead of xi0 in the loop below
-alpha <- function(x) {r <- 0.5/(1+exp(-x)) + 0.1; return(r)}  #varying exponent, alpha(-inf) = 0, alpha(+inf) = 1
+alpha <- function(x) 0.5/(1+exp(-x)) + 0.1  #varying exponent, alpha(-inf) = 0, alpha(+inf) = 1
 tc <- 2
-a <- function(x,s) {r <- (tc)^(-alpha(x)); return(r)}         #a(x,s) diffusivity
-b <- function(x,s) {r <- 0; return(r)}                        #b(x,s) drift function
-Psi <- function(x,t) {r <- (t^(-alpha(x))  )/gamma(1-alpha(x)); r[r>1] <- 1; return(r)}          #Tail function of psi measure
+a <- function(x,s) (tc)^(-alpha(x))         #a(x,s) diffusivity
+b <- function(x,s) 0                        #b(x,s) drift function
+Psi <- function(x,t) {r <- (t^(-alpha(x))  )/gamma(1-alpha(x)); r[r>1]}          #Tail function of psi measure
 #Tail function probabilities at all grid points
 TailF <- outer(seq(-xmax,xmax,chi),seq(0,vmax,tau),Psi)/c
 TailF[TailF > 1] <- 1
