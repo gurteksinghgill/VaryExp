@@ -1,3 +1,9 @@
+---
+title: "Computing probability densities for varying anomalous exponents"
+output: html_notebook
+---
+
+```{r}
 c <- 40
 chi <-
   sqrt(1 / c)                                              #x spacing
@@ -120,3 +126,4 @@ plot(
   ylab = paste("Sum_{x} Xi (x,v,", t, ")")
 )
 grid()
+```
