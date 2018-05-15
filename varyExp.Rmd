@@ -36,12 +36,12 @@ a <- function(x, s)
   (tc) ^ (-alpha(x))         #a(x,s) diffusivity
 b <- function(x, s)
   0                        #b(x,s) drift function
-Psi <-
-  function(x, t) {
-    r <-
-      (t ^ (-alpha(x))) / gamma(1 - alpha(x))
-    r[r > 1]
-  }          #Tail function of psi measure
+Psi <- function(x, t) {
+    r <- (t ^ (-alpha(x))) / gamma(1 - alpha(x))
+    r[r > 1] <- 1
+    r
+  }          
+#Tail function of psi measure
 #Tail function probabilities at all grid points
 TailF <- outer(seq(-xmax, xmax, chi), seq(0, vmax, tau), Psi) / c
 TailF[TailF > 1] <- 1
@@ -104,7 +104,7 @@ chk2 <-
 
 Plot the densities:
 
-```{r}
+```{r, echo=FALSE}
 #Plot density rho and v at time = 0 and t
 par(mfrow = c(2, 2))
 plot(
