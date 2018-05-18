@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+
+*.bbl
+*.log
+*.synctex.gz
+*.spl
