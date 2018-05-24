@@ -8,9 +8,10 @@ Set up global parameters:
 ```{r}
 c <- 40
 chi <-
-  sqrt(1 / c)                                              #x spacing
+  sqrt(1 / c)      #x spacing
+alpha0 <- 0.7
 tau <-
-  1 / c                                                    #Time spacing
+  (1 / c)^(1/alpha0)                                                    #Time spacing
 vmax <-
   round(100 / tau + 1) * tau                                 #range of residence time v = (0, vmax)
 xmax <-
