@@ -37,7 +37,7 @@
 
 \begin{frontmatter}
 
-\title{Variable Order Fractional Fokker-Planck Equations derived from
+\title{A Universal Algorithm for Continuum Limit Distributions of
 Continuous Time Random Walks}
 \author[UNSW]{Gurtek Gill}
 \ead{rickygill01@gmail.com}
@@ -46,9 +46,24 @@ Continuous Time Random Walks}
 \address[UNSW]{School of Mathematics \& Statistics, UNSW Sydney}
 
 \begin{abstract}
-We propose a universal ``Semi-Markov algorithm'' for the computation of probability distributions of Continuous Time Random Walk (CTRW) scaling limits.  It applies to fractional diffusion, tempered fractional diffusion, as well as their distributed-order and variable-order (in space) extensions.  Drift and diffusivity may be space- and time-dependent, and the waiting times space-dependent.
-
-The algorithm is based on the following assumptions only: i) a CTRW process is renewed after each jump-waiting time pair; ii) waiting times depend on space but not on time; iii) all coefficients can be evaluated numerically.  We then show that the Semi-Markov algorithm shares the same properties as the recent ``Discrete Time Random Walk'' algorithm: it is consistent, conserves mass, generates strictly non-negative solutions, and has the same computational complexity.  To highlight the applicability of our algorithm, we calculate probability densities of variable order fractional diffusion as well as fractional diffusion with spatially varying tempering.
+We propose a universal ``Semi-Markov algorithm'' for the computation of
+probability distributions of Continuous Time Random Walks (CTRWs) and their
+continuum limits.
+The algorithm is universal in the following sense: Any CTRW continuum limit
+can be mapped to a bivariate Langevin equation which tracks the cumulative sum
+of jumps and waiting times, and given the coefficients of this Langevin
+equation, the algorithm will compute the desired probability densities.
+Besides subdiffusion with space- and time-dependent drift, this approach
+covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
+tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
+order where the mixture can vary in space.
+Our Semi-Markov algorithm generalizes the recent
+``Discrete Time Random Walk'' algorithm, and shares the same properties:
+it is consistent, conserves mass, generates strictly non-negative solutions,
+and has the same computational complexity.
+To illustrate applicability, we set up an interface problem, where two
+subdiffusive media with different anomalous exponents meet, and compute the
+evolution of probability densities at the interface.
 \end{abstract}
 
 \begin{keyword}
