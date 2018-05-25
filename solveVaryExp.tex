@@ -75,9 +75,55 @@ Anomalous Diffusion \sep Continuous Time Random Walk \sep Fractional Derivative 
 
 \section{Introduction}
 
+Subdiffusive transport processes are characterized via a sublinear growth of the
+mean squared displacement: $\langle X_t \rangle \sim t^\alpha$, where
+$0 < \alpha < 1$. Such processes are usually modelled either by fractional 
+Brownian motion or Continuous Time Random Walks (CTRWs), depending on 
+whether the auto-correlation of jumps decays slowly or the waiting times 
+between jumps are heavy-tailed with parameter $\alpha$, modelling traps 
+or dead ends \citep{HLS2010b}. 
+The CTRW model has proven to be a particularly useful model, predominantly in 
+biophysics
+\citep{Metzler2000,TMT04,Wong04,Banks2005,Santamaria2006a,
+Hofling2012,Regner2013}, 
+but also in groundwater hydrology \citep{Berkowitz2008,SchumerMIM} and 
+econophysics \citep{Scalas2006}.
+
+A modelling framework for the evolution of probability densities of random walks 
+is given by the Fokker--Planck equation \citep{gardiner2004handbook}: 
+\begin{align}
+\frac{\del P(y,t)}{\del t} = \mathcal L^*(y,t) P(y,t) + \delta_{(0,0)}(y,t),
+\end{align}
+where 
+\begin{align}
+\mathcal L^* g(y,t)
+&= -\frac{\partial }{\partial y}[b(y,t) g(y,t)]
++\frac{1}{2}\frac{\partial^2 }{\partial y^2}[a(y,t) g(y,t)]
+\end{align}
+is called the Fokker--Planck operator. 
+CTRWs generalize random walks by allowing a larger class of waiting times 
+before each jump. This translates into a \emph{memory kernel} $V(y,t)$ 
+acting on the time variable in the equation \cite{BaeumerStraka16}: 
+\begin{align} \label{eq:FFPE}
+\frac{\del P(y,t)}{\del t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
+\int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
+\end{align}
+Table \ref{tab:kernels} below gives an overview over the main forms of 
+$V(y,s)$ that are of interest. 
+
+
+
+
+
+
+. If the tail function of the waiting time 
+distribution follows a power law $\pr[W > t] \sim t^{-\alpha}$, the long 
+time limit of CTRW dynamics is governed by a fractional Fokker-Planck 
+equation \citep{Metzler2000}. 
+
+
 Continuous Time Random Walks (CTRWs) \citep{Scher1975} generalize random walks by introducing heavy-tailed waiting times between jumps, and thus model ``subdiffusion'' via a sublinear growth of the mean squared displacement \citep{HLS2010b}.
-A large number of experiments have reproduced subdiffusive processes (see e.g.\ \cite{Metzler2000,TMT04,Wong04,Banks2005,Santamaria2006a,
-Berkowitz2008,Hofling2012,Regner2013}), which has stimulated further research in the modelling of subdiffusion via CTRWs in the last two decades. Since the introduction of the Fractional Fokker-Planck Equation (FFPE) by \cite{BMK00}, a powerful tool for the study of probability distributions of random walkers has become available.
+A large number of experiments have reproduced subdiffusive processes (see e.g.\ ), which has stimulated further research in the modelling of subdiffusion via CTRWs in the last two decades. Since the introduction of the Fractional Fokker-Planck Equation (FFPE) by \cite{BMK00}, a powerful tool for the study of probability distributions of random walkers has become available.
 The FFPE has then been extended to include space- and time-dependent drift \citep{HLS10PRL},
 %reactions \cite{Henry2000,Langlands2008d,Froemberg2008a} and non-linear interaction \cite{StrakaFedotov14}.
 to model \emph{tempered} (or transient) fractional diffusion \citep{Gajda2010,StrakaThesis,Zhang2015,Sabzikar2015}
@@ -86,11 +132,12 @@ and to model fractional diffusion of spatially varying order
 
 
 Parallel to the theoretical advancement of fractional Fokker-Planck equations, numerous methods for the computation of solutions to FFPEs have been developed, among them explicit methods \citep{Yuste2005}, implicit methods \citep{Langlands2005a}, spectral methods \citep{Li2009} and Galerkin methods \citep{Mustapha2011}.
-\cite{Hanert2014} have generalized the spectral method to the tempered fractional setting.  \cite{Chen2010}, among others, have developed computational methods to compute solutions of \emph{variable order} FFPEs; however, only their equation is consistent with a CTRW scaling limit representation \citep{Straka17}.
+\cite{Hanert2014} have generalized the spectral method to the tempered fractional setting.
+Among others, \cite{Chen2010} have developed computational methods to compute solutions of \emph{variable order} FFPEs; their equation is consistent with a CTRW scaling limit representation, but many aren't \citep{Straka17}.
 
 The recent Discrete Time Random Walk (DTRW) method \citep{Angstmann2015a,Angstmann2016a} calculates the probability distributions of a discrete stochastic process which approximates the continuum limit process whose distributions solve a FFPE. The advantage of this approach is that mass is necessarily conserved in each timestep, and that solutions are guaranteed to be nowhere negative.  Its premise is the usage of Shibuya-distributed (discrete and power-law tailed) waiting times, which allow for the calculation of a discrete memory kernel via a Z-transform.
 
-The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is thus applicable to any conceivable scaling limit of waiting time distributions.  What scaling limits of waiting time distributions are conceivable has been shown by \cite{Straka17} and \cite{BaeumerStraka16}:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
+The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is applicable to any conceivable scaling limit of waiting time distributions.  Which scaling limits of waiting time distributions are conceivable has been shown by \cite{Straka17} and \cite{BaeumerStraka16}:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
 From the single assumption that the Markov property applies at each jump time, it follows that $(Y_u,Z_u)$ must be a Langevin process driven by L\'evy noise.
 Thus $(Y_u, Z_u)$ is locally a L\'evy process governed by a local coefficient triple
 \begin{align} \label{eq:triple}
@@ -104,18 +151,9 @@ of diffusivity, drift  and L\'evy jump measure; recall that a L\'evy measure mus
 where $a \wedge b := \min\{a, b\}$.
 
 In \citep{BaeumerStraka16}, probability densities $P(y,t)$ of CTRW limits with a general representation as above were shown to be unique solutions to a FFPE
-\begin{align} \label{eq:FFPE}
-\frac{\del P(y,t)}{\del t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
-\int_0^t P(y,t-s) V(y,s)\,ds \right] + h(y,t),
-\end{align}
 in which $a(y,t)$ and $b(y,t)$ appear in the Fokker-Planck operator
 $\mathcal L^*$ as
-\begin{align}
-\label{eq:FPop}
-\mathcal L^* g(y,t)
-&= -\frac{\partial }{\partial y}[b(y,t) g(y,t)]
-+\frac{1}{2}\frac{\partial^2 }{\partial y^2}[a(y,t) g(y,t)]
-\end{align}
+
 and where the memory kernel $V(y,t)$ is derived from $d(y)$ and $\nu(w|y)$ via its Laplace transform
 \begin{align} \label{eq:LT-renewal-measure}
 \hat V(y,\lambda) = \int_0^\infty e^{-\lambda t} V(y,t)\,dt
