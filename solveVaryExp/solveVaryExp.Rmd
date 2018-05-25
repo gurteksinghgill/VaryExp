@@ -1,79 +1,50 @@
-\documentclass[a4paper,12pt]{elsarticle}
-\usepackage[a4paper]{geometry}
-\usepackage[cm]{fullpage}
-\usepackage{amsthm,amsmath,amssymb}
-\usepackage{graphicx}
-\usepackage{url}
-\usepackage{natbib}
-\bibliographystyle{abbrvnat}
-\setcitestyle{authoryear,open={(},close={)}}
-\usepackage{hyperref}
+---
+title: |
+  A Universal Algorithm for Continuum Limit Distributions of Continuous 
+  Time Random Walks
+author:
+  - name: Gurtek Gill
+    email: rickygill01@gmail.com
+    affiliation: UNSW Sydney
+  - name: Peter Straka
+    email: p.straka@unsw.edu.au
+    affiliation: UNSW Sydney
+    footnote: Corresponding Author
+address:
+  - code: UNSW Sydney
+    address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
+abstract: |
+  We propose a universal "Semi-Markov algorithm" for the computation of
+  probability distributions of Continuous Time Random Walks (CTRWs) and their
+  continuum limits.
+  The algorithm is universal in the following sense: Any CTRW continuum limit
+  can be mapped to a bivariate Langevin equation which tracks the cumulative sum
+  of jumps and waiting times, and given the coefficients of this Langevin
+  equation, the algorithm will compute the desired probability densities.
+  Besides subdiffusion with space- and time-dependent drift, this approach
+  covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
+  tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
+  order where the mixture can vary in space.
+  Our Semi-Markov algorithm generalizes the recent
+  "Discrete Time Random Walk" algorithm, and shares the same properties:
+  it is consistent, conserves mass, generates strictly non-negative solutions,
+  and has the same computational complexity.
+  To illustrate applicability, we set up an interface problem, where two
+  subdiffusive media with different anomalous exponents meet, and compute the
+  evolution of probability densities at the interface. 
+journal: "An Elsevier Journal"
+date: "`r Sys.Date()`"
+bibliography: varyExp.bib
+output: 
+  rticles::elsevier_article:
+    number_sections: true
+preamble: | 
+  \usepackage{amsthm,amsmath,amssymb,hyperref}
+---
 
-\numberwithin{equation}{section}
-\theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{cor}[theorem]{Corollary}
-\theoremstyle{definition}
-\newtheorem{defi}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-\theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-\numberwithin{equation}{section}
+\newtheorem{lemma}{[theorem]{Lemma}}
 
-\newcommand{\Rd}{\mathbb R^d}
-\newcommand{\spc}{\mathbb R}
-\newcommand{\tim}{[0,\infty)}
-\newcommand{\spctim}{\spc \times [0,\infty)}
-\newcommand{\R}{\mathbb R}
-\newcommand{\1}{\mathbf 1}
-\newcommand{\pr}{\mathbf P}
-\newcommand{\ex}{\mathbf E}
-\newcommand{\del}{\partial}
-
-
-\begin{document}
-
-\begin{frontmatter}
-
-\title{A Universal Algorithm for Continuum Limit Distributions of
-Continuous Time Random Walks}
-\author[UNSW]{Gurtek Gill}
-\ead{rickygill01@gmail.com}
-\author[UNSW]{Peter Straka}
-\ead{p.straka@unsw.edu.au}
-\address[UNSW]{School of Mathematics \& Statistics, UNSW Sydney}
-
-\begin{abstract}
-We propose a universal ``Semi-Markov algorithm'' for the computation of
-probability distributions of Continuous Time Random Walks (CTRWs) and their
-continuum limits.
-The algorithm is universal in the following sense: Any CTRW continuum limit
-can be mapped to a bivariate Langevin equation which tracks the cumulative sum
-of jumps and waiting times, and given the coefficients of this Langevin
-equation, the algorithm will compute the desired probability densities.
-Besides subdiffusion with space- and time-dependent drift, this approach
-covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
-tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
-order where the mixture can vary in space.
-Our Semi-Markov algorithm generalizes the recent
-``Discrete Time Random Walk'' algorithm, and shares the same properties:
-it is consistent, conserves mass, generates strictly non-negative solutions,
-and has the same computational complexity.
-To illustrate applicability, we set up an interface problem, where two
-subdiffusive media with different anomalous exponents meet, and compute the
-evolution of probability densities at the interface. 
-\end{abstract}
-
-\begin{keyword}
-Anomalous Diffusion \sep Continuous Time Random Walk \sep Fractional Derivative \sep Variable Order \sep stochastic process limit \sep L\'evy process \sep Fokker-Planck
-\MSC[2010] 60F17 \sep  60G22
-\end{keyword}
-
-\end{frontmatter}
-
-\section{Introduction}
+# Introduction
 
 Subdiffusive transport processes are characterized via a sublinear growth of the
 mean squared displacement: $\langle X_t \rangle \sim t^\alpha$, where
@@ -81,18 +52,17 @@ $0 < \alpha < 1$. Such processes are usually modelled either by fractional
 Brownian motion or Continuous Time Random Walks (CTRWs), depending on 
 whether the auto-correlation of jumps decays slowly or the waiting times 
 between jumps are heavy-tailed with parameter $\alpha$, modelling traps 
-or dead ends \citep{HLS2010b}. 
+or dead ends [@HLS2010b]. 
 The CTRW model has proven to be a particularly useful model, predominantly in 
 biophysics
-\citep{Metzler2000,TMT04,Wong04,Banks2005,Santamaria2006a,
-Hofling2012,Regner2013}, 
-but also in groundwater hydrology \citep{Berkowitz2008,SchumerMIM} and 
-econophysics \citep{Scalas2006}.
+[@Metzler2000; @TMT04; @Wong04; @Banks2005; @Santamaria2006a; @Hofling2012; @Regner2013], 
+but also in groundwater hydrology [@Berkowitz2008; @SchumerMIM] and 
+econophysics [@Scalas2006].
 
 A modelling framework for the evolution of probability densities of random walks 
-is given by the Fokker--Planck equation \citep{gardiner2004handbook}: 
+is given by the Fokker--Planck equation [@gardiner2004handbook]: 
 \begin{align}
-\frac{\del P(y,t)}{\del t} = \mathcal L^*(y,t) P(y,t) + \delta_{(0,0)}(y,t),
+\frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) P(y,t) + \delta_{(0,0)}(y,t),
 \end{align}
 where 
 \begin{align}
@@ -105,7 +75,7 @@ CTRWs generalize random walks by allowing a larger class of waiting times
 before each jump. This translates into a \emph{memory kernel} $V(y,t)$ 
 acting on the time variable in the equation \cite{BaeumerStraka16}: 
 \begin{align} \label{eq:FFPE}
-\frac{\del P(y,t)}{\del t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
+\frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
 \int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
 \end{align}
 Table \ref{tab:kernels} below gives an overview over the main forms of 
@@ -117,27 +87,30 @@ $V(y,s)$ that are of interest.
 
 
 . If the tail function of the waiting time 
-distribution follows a power law $\pr[W > t] \sim t^{-\alpha}$, the long 
+distribution follows a power law $\mathbf P[W > t] \sim t^{-\alpha}$, the long 
 time limit of CTRW dynamics is governed by a fractional Fokker-Planck 
-equation \citep{Metzler2000}. 
+equation [@Metzler2000]. 
 
 
-Continuous Time Random Walks (CTRWs) \citep{Scher1975} generalize random walks by introducing heavy-tailed waiting times between jumps, and thus model ``subdiffusion'' via a sublinear growth of the mean squared displacement \citep{HLS2010b}.
-A large number of experiments have reproduced subdiffusive processes (see e.g.\ ), which has stimulated further research in the modelling of subdiffusion via CTRWs in the last two decades. Since the introduction of the Fractional Fokker-Planck Equation (FFPE) by \cite{BMK00}, a powerful tool for the study of probability distributions of random walkers has become available.
-The FFPE has then been extended to include space- and time-dependent drift \citep{HLS10PRL},
-%reactions \cite{Henry2000,Langlands2008d,Froemberg2008a} and non-linear interaction \cite{StrakaFedotov14}.
-to model \emph{tempered} (or transient) fractional diffusion \citep{Gajda2010,StrakaThesis,Zhang2015,Sabzikar2015}
+Continuous Time Random Walks (CTRWs) [@Scher1975] generalize random walks 
+by introducing heavy-tailed waiting times between jumps, and thus model 
+``subdiffusion'' via a sublinear growth of the mean squared displacement [@HLS2010b].
+A large number of experiments have reproduced subdiffusive processes (see e.g.\ ), which has stimulated further research in the modelling of subdiffusion via CTRWs in the last two decades. Since the introduction of the Fractional Fokker-Planck Equation (FFPE) by @BMK00, a powerful tool for the study of probability distributions of random walkers has become available.
+The FFPE has then been extended to include space- and time-dependent drift [@HLS10PRL],
+%reactions \cite{Henry2000,Langlands2008d,Froemberg2008a} and non-linear interaction @StrakaFedotov14.
+to model \emph{tempered} (or transient) fractional diffusion [@Gajda2010, @StrakaThesis, @Zhang2015, @Sabzikar2015]
 and to model fractional diffusion of spatially varying order
-\citep{Chechkin2005a, Straka17}.
+[@Chechkin2005a, @ Straka17].
 
 
-Parallel to the theoretical advancement of fractional Fokker-Planck equations, numerous methods for the computation of solutions to FFPEs have been developed, among them explicit methods \citep{Yuste2005}, implicit methods \citep{Langlands2005a}, spectral methods \citep{Li2009} and Galerkin methods \citep{Mustapha2011}.
-\cite{Hanert2014} have generalized the spectral method to the tempered fractional setting.
-Among others, \cite{Chen2010} have developed computational methods to compute solutions of \emph{variable order} FFPEs; their equation is consistent with a CTRW scaling limit representation, but many aren't \citep{Straka17}.
+Parallel to the theoretical advancement of fractional Fokker-Planck equations, numerous methods for the computation of solutions to FFPEs have been developed, among them explicit methods [@Yuste2005], implicit methods [@Langlands2005a], spectral methods 
+[@Li2009] and Galerkin methods [@Mustapha2011].
+@Hanert2014 have generalized the spectral method to the tempered fractional setting.
+Among others, @Chen2010 have developed computational methods to compute solutions of \emph{variable order} FFPEs; their equation is consistent with a CTRW scaling limit representation, but many aren't [@Straka17].
 
-The recent Discrete Time Random Walk (DTRW) method \citep{Angstmann2015a,Angstmann2016a} calculates the probability distributions of a discrete stochastic process which approximates the continuum limit process whose distributions solve a FFPE. The advantage of this approach is that mass is necessarily conserved in each timestep, and that solutions are guaranteed to be nowhere negative.  Its premise is the usage of Shibuya-distributed (discrete and power-law tailed) waiting times, which allow for the calculation of a discrete memory kernel via a Z-transform.
+The recent Discrete Time Random Walk (DTRW) method [@Angstmann2015a, @Angstmann2016a] calculates the probability distributions of a discrete stochastic process which approximates the continuum limit process whose distributions solve a FFPE. The advantage of this approach is that mass is necessarily conserved in each timestep, and that solutions are guaranteed to be nowhere negative.  Its premise is the usage of Shibuya-distributed (discrete and power-law tailed) waiting times, which allow for the calculation of a discrete memory kernel via a Z-transform.
 
-The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is applicable to any conceivable scaling limit of waiting time distributions.  Which scaling limits of waiting time distributions are conceivable has been shown by \cite{Straka17} and \cite{BaeumerStraka16}:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
+The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is applicable to any conceivable scaling limit of waiting time distributions.  Which scaling limits of waiting time distributions are conceivable has been shown by @Straka17 and @BaeumerStraka16:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
 From the single assumption that the Markov property applies at each jump time, it follows that $(Y_u,Z_u)$ must be a Langevin process driven by L\'evy noise.
 Thus $(Y_u, Z_u)$ is locally a L\'evy process governed by a local coefficient triple
 \begin{align} \label{eq:triple}
@@ -150,7 +123,7 @@ of diffusivity, drift  and L\'evy jump measure; recall that a L\'evy measure mus
 \end{align}
 where $a \wedge b := \min\{a, b\}$.
 
-In \citep{BaeumerStraka16}, probability densities $P(y,t)$ of CTRW limits with a general representation as above were shown to be unique solutions to a FFPE
+In [@BaeumerStraka16], probability densities $P(y,t)$ of CTRW limits with a general representation as above were shown to be unique solutions to a FFPE
 in which $a(y,t)$ and $b(y,t)$ appear in the Fokker-Planck operator
 $\mathcal L^*$ as
 
@@ -161,7 +134,8 @@ and where the memory kernel $V(y,t)$ is derived from $d(y)$ and $\nu(w|y)$ via i
 \nu(w | y)\,dw}.
 \end{align}
 
-In \citep{Straka17}, exact conditions on the distribution of jumps and waiting times were given under which a sequence of CTRWs converges to a limit whose distributions $P(y,t)$ solve \eqref{eq:FFPE}.
+In [@Straka17], exact conditions on the distribution of jumps and waiting times were 
+given under which a sequence of CTRWs converges to a limit whose distributions $P(y,t)$ solve \eqref{eq:FFPE}.
 We give a short account of these results and their relevance for this article in Section 2.
 
 In Section 3 we construct a sequence $X^{(c)}_t$ of DTRWs (i.e.\ CTRWs with discrete jumps and waiting times) which converges as
@@ -176,11 +150,11 @@ In Section 5 we compute probability distributions for two examples: a spatially 
 
 
 
-\section{Stochastic solutions to Fokker-Planck equations with memory}
+# Stochastic solutions to Fokker-Planck equations with memory
 
 \subsection{Assumptions}
 
-The FPE with spatially varying memory in its general form \eqref{eq:FFPE} was derived from CTRW limits in \cite{BaeumerStraka16}.  We make the following assumptions on the CTRWs and the FPE \eqref{eq:FFPE} in this article:
+The FPE with spatially varying memory in its general form \eqref{eq:FFPE} was derived from CTRW limits in @BaeumerStraka16.  We make the following assumptions on the CTRWs and the FPE \eqref{eq:FFPE} in this article:
 \begin{enumerate}
 \item
 The variance of the jumps is (uniformly) bounded.  This means that the CTRW limit $X_t$ has continuous sample paths\footnote{An extension of the theory in this article to infinite variance jumps is feasible: L\'evy noise would also enter the spatial component and an integral term would enter in the Fokker-Planck operator $\mathcal L^*$.}.
@@ -206,7 +180,7 @@ of the L\'evy measure is weakly singular at $0$, that is
 \end{align}
 for some constant $C > 0$.
 \end{enumerate}
-The technical Condition 3 is needed for the existence of a unique solution to the Langevin equation defining $(Y_u, Z_u)$, see \cite{Straka17}.
+The technical Condition 3 is needed for the existence of a unique solution to the Langevin equation defining $(Y_u, Z_u)$, see @Straka17.
 Condition 4 ensures that the L\'evy measure is infinite; if it wasn't, the CTRW limit could be an uninteresting CTRW process with finite numbers of steps in finite time intervals.  Moreover, it simplifies our analysis further below for \eqref{eq:psi-local}.
 
 
@@ -216,16 +190,16 @@ CTRWs are renewed after each jump: The next waiting time $w$ and the next jump $
 \begin{align} \label{eq:STJK}
 K^{(c)}(z,w | x,s),
 \end{align}
-which is a bivariate probability density in $(z,w) \in \spctim$ for every $(x,s) \in \spctim$.  We assume the scaling parameter $c$ to be such that
+which is a bivariate probability density in $(z,w) \in \mathbb R \times [0,\infty)$ for every $(x,s) \in \mathbb R \times [0,\infty)$.  We assume the scaling parameter $c$ to be such that
 \begin{align}
 K^{(c)}(z,w | x,s) \to \delta_{(0,0)}(z,w), \quad c \to \infty,
 \end{align}
-where $\delta_{(0,0)}$ denotes the Dirac delta function at $(0,0)$. For more details, see \cite{Straka17}.
+where $\delta_{(0,0)}$ denotes the Dirac delta function at $(0,0)$. For more details, see @Straka17.
 
 
 \subsection{Conditions for convergence of CTRWs}
 
-Conditions for the convergence of $X^{(c)}_t$ to a limit $X_t$ whose probability distributions $P(y,t)$ solve \eqref{eq:FFPE} were given in \cite{Straka17}:
+Conditions for the convergence of $X^{(c)}_t$ to a limit $X_t$ whose probability distributions $P(y,t)$ solve \eqref{eq:FFPE} were given in @Straka17:
 \begin{align} \label{eq:cond1}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
 c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
@@ -250,16 +224,16 @@ If the four conditions \eqref{eq:cond1}--\eqref{eq:cond4} are all satisfied, the
 \left \lbrace X^{(c)}_t \right\rbrace_{t \ge 0}
 \longrightarrow \left \lbrace X_t \right\rbrace_{t \ge 0}
 \quad \text{as } c \to \infty
-\quad \text{in } D(\spc).
+\quad \text{in } D(\mathbb R).
 \end{align}
-That is, $X^{(c)}_t$ and $X_t$ are viewed as random elements in the space $D(\spc)$ of $\spc$-valued trajectories with distributions $\pr^{(c)}$ and $\pr$, and $\pr^{(c)}$ converges (weakly) to $\pr$ as $c \to \infty$.
+That is, $X^{(c)}_t$ and $X_t$ are viewed as random elements in the space $D(\mathbb R)$ of $\mathbb R$-valued trajectories with distributions $\mathbf P^{(c)}$ and $\mathbf P$, and $\mathbf P^{(c)}$ converges (weakly) to $\mathbf P$ as $c \to \infty$.
 This means that
 \begin{align}
-\lim_{c \to \infty} \int f(\omega)\pr^{(c)}(d\omega)
-= \int f(\omega)\pr(d\omega),
+\lim_{c \to \infty} \int f(\omega)\mathbf P^{(c)}(d\omega)
+= \int f(\omega)\mathbf P(d\omega),
 \end{align}
-for all real valued, bounded and continuous $f$ defined on $D(\spc)$.
-The Skorokhod $J_1$ topology on $D(\spc)$ defines continuity on $D(\spc)$. For full details, see \cite{Whitt2010}.  A consequence of the stochastic process convergence is the convergence of \emph{finite-dimensional distributions}: For any $0 \le t_1 < \ldots < t_n$, the distribution of the random vectors
+for all real valued, bounded and continuous $f$ defined on $D(\mathbb R)$.
+The Skorokhod $J_1$ topology on $D(\mathbb R)$ defines continuity on $D(\mathbb R)$. For full details, see @Whitt2010.  A consequence of the stochastic process convergence is the convergence of \emph{finite-dimensional distributions}: For any $0 \le t_1 < \ldots < t_n$, the distribution of the random vectors
 \begin{align}
 (X^{(c)}_{t_1}, \ldots, X^{(c)}_{t_n}) \to (X_{t_1}, \ldots, X_{t_n})
 \end{align}
@@ -267,7 +241,7 @@ converges.
 
 
 
-\section{DTRW dynamics}
+# DTRW dynamics
 
 Recall our general aim: given a general FFPE of the form \eqref{eq:FFPE}, we would like to compute an approximation of the solution $P(y,t)$.  In this section, we give a space-time kernel \eqref{eq:STJK} which defines a \emph{DTRW}, i.e.\ a CTRW with discrete jumps and waiting times, which converges to a CTRW limit $X_t$ whose distributions $P(y,t)$ solve \eqref{eq:FFPE}.
 
@@ -404,7 +378,7 @@ where $x$ is the location of the walker before the jump, and $t$ is the time at 
 In order for $r, n$ and $\ell$ to be between $0$ and $1$,
 we need $\chi$ to be small  enough so that
 \begin{align}
-  \chi |b(x,t)|  \le a(x,t), \quad (x,t) \in \spctim.
+  \chi |b(x,t)|  \le a(x,t), \quad (x,t) \in \mathbb R \times [0,\infty).
 \end{align}
 For later use, we note that
 \begin{align}
@@ -414,7 +388,7 @@ c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
 \\ \label{eq:jump-calc-a}
 c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
 \\ \label{eq:jump2delta}
-\int_\spc f(z)\left[r^{(c)}(x,t) \delta_\chi(z)
+\int_\mathbb R f(z)\left[r^{(c)}(x,t) \delta_\chi(z)
 + n(x,t) \delta_0(z) + \ell^{(c)}(x,t) \delta_{-\chi}(z) \right]\,dz
 &\to f(0)
 \end{align}
@@ -438,7 +412,7 @@ Alternatively, one may assume that the bias to jump left/right/self-jump is eval
   + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
   \psi^{(c)}(w|x).
 \end{align}
-These dynamics were considered in \cite{Angstmann2015}, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
+These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
 
 To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
 \eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
@@ -447,20 +421,20 @@ To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
 
 
 
-\section{Semi-Markov numeric scheme}
+# Semi-Markov numeric scheme
 
 \subsection{Master equations}
 
 In the previous section, we have constructed a DTRW $X^{(c)}_t$ which  converges to the CTRW limit $X_t$ whose densities $P(y,t)$ solve \eqref{eq:FFPE}.  For large values of $c$, the probability densities of $X^{(c)}_t$ will hence be a good approximation of $P(y,t)$, see \eqref{eq:consistency} below.
 In this section, we calculate the probability distributions of $X^{(c)}_t$.
 
-Consider the space-time transition kernel \eqref{eq:DTRWSTJK} which defines the DTRW. Since all jumps are from $\{-\chi, 0, +\chi\}$, the walker will be hopping on a lattice embedded in $\spc$.
+Consider the space-time transition kernel \eqref{eq:DTRWSTJK} which defines the DTRW. Since all jumps are from $\{-\chi, 0, +\chi\}$, the walker will be hopping on a lattice embedded in $\mathbb R$.
 Recall that a waiting time $W$ at a spatial lattice point $i\chi$ is drawn from $\psi^{(c)}(w | i\chi)$ and thus satisfies
 \begin{align}
-\pr(W > j\tau) = H^{(c)}(j\tau | i\chi) =: h_{i,j}.
+\mathbf P(W > j\tau) = H^{(c)}(j\tau | i\chi) =: h_{i,j}.
 \end{align}
 Conditional on $W > j\tau$, the probability that $W > (j + 1) \tau$ is
-$$\pr(W > (j + 1)\tau | W > j \tau) = h_{i,j+1} / h_{i,j}.$$
+$$\mathbf P(W > (j + 1)\tau | W > j \tau) = h_{i,j+1} / h_{i,j}.$$
 We now write $(x_k,v_k) \in \mathbb Z \times (\mathbb N \cup \{0\})$ for the
 lattice coordinates of a walker's location and age at time
 $k\tau$. That is, $(x_k, v_k) = (i,j)$
@@ -479,7 +453,7 @@ $n^k_i = n(i\chi, (k+1)\tau)$, respectively.
 \end{itemize}
 The above dynamics uniquely determine the stepwise evolution of $(x_k, v_k)$.
 We write
-$\xi^k_{i,j} = \pr(x_k = i, v_k = j)$
+$\xi^k_{i,j} = \mathbf P(x_k = i, v_k = j)$
 for the probability distribution of $(i,j)$ at time $k$.
 The master equations for $\xi^k_{i,j}$ then read:
 \begin{align}
@@ -528,10 +502,10 @@ that is:
 \subsection{Properties of the algorithm}
 
 The main interest lies in the probability distribution of $X^{(c)}_t$.
-Since the temporal lattice $\{k\tau\}$ is embedded in $\tim$, we have
+Since the temporal lattice $\{k\tau\}$ is embedded in $[0,\infty)$, we have
 $X^{(c)}_t = X^{(c)}_{t_\tau}$, where $t_\tau$ is defined exactly as $w_\tau$ in \eqref{eq:w-tau}.  By marginalizing over the age $j$, we thus find
 \begin{align}
-  \pr(X^{(c)}_t = i\chi) =: \rho^k_i = \sum_{j=0}^J \xi^k_{i,j},
+  \mathbf P(X^{(c)}_t = i\chi) =: \rho^k_i = \sum_{j=0}^J \xi^k_{i,j},
   \quad k = \lfloor t /\tau \rfloor.
 \end{align}
 
@@ -549,17 +523,17 @@ Due to \eqref{eq:CTRW-J1}, the convergence
   \longrightarrow \langle f(X_t) \rangle
   \quad \text{ as } c \to \infty,
 \end{align}
-holds for all bounded continuous real-valued $f$ defined on $\R$.
+holds for all bounded continuous real-valued $f$ defined on $\mathbb R$.
 Now if $X_t$ is Lebesgue absolutely continuous (has a density), then we may take $f$ to be an indicator function of an interval $(a,b)$, and \eqref{eq:consistency} reads
 \begin{align}
   \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
   \longrightarrow
-  \pr(a < X_t < b) \quad \text{ as } c \to \infty.
+  \mathbf P(a < X_t < b) \quad \text{ as } c \to \infty.
 \end{align}
 
 
 \paragraph{Equivalence with DTRW approach}  The Discrete Time Random Walk algorithm by
-\cite{Angstmann2015a} assumes discrete waiting times with the Sibuya
+@Angstmann2015a assumes discrete waiting times with the Sibuya
 distribution, whose tail function $\Psi(n)$ has the asymptotics
 $\Psi(n) \sim n^{-\beta}$.
 In \eqref{eq:GME2}, see that we have $\xi^k_{i,j} = \xi^{k-j}_{i,0} h_{i,j}$,
@@ -569,26 +543,27 @@ $$\xi^{k+1}_{i,0} = \sum_{j=0}^J (h_{i,j} - h_{i,j+1})
 (\ell^{k+1}_{i+1} \xi^{k-j}_{i+1, 0} + r^{k+1}_{i-1} \xi^{k-j}_{i-1,0} + c^{k+1}_{i,j} \xi^{k-j}_{i,0}),$$
 assuming that $h_{i,j}$ is constant in $i$ (homogeneous waiting times).
 Since $h_{i,j} - h_{i,j+1}$ is the probability of a waiting time being
-$j+1$, one sees the equivalence with Equation (16) in \cite{Angstmann2015a},
+$j+1$, one sees the equivalence with Equation (16) in @Angstmann2015a,
 if we choose $h_{i,j} = \Psi(j)$.
 
-\section{Examples}
+# Examples
+
 \label{sec:examples}
 
-Within this semi-Markov framework, we may now implement the above numeric scheme to calculate approximations of the densities of a variety of CTRW limits. By allowing for various initial residence times \cite{Gill2016}, waiting time distributions $\psi (\omega | x)$ and spatially varying exponents $\beta (x)$ these are able to model a very wide set of subdiffusive systems. \\
+Within this semi-Markov framework, we may now implement the above numeric scheme to calculate approximations of the densities of a variety of CTRW limits. By allowing for various initial residence times @Gill2016, waiting time distributions $\psi (\omega | x)$ and spatially varying exponents $\beta (x)$ these are able to model a very wide set of subdiffusive systems. \\
 
 \paragraph{Spatially varying exponent}  For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the diffusivity we have $a(x) = T_0^{-\beta(x)}$ where $T_0$ is the time scale and waiting time distribution tail function $\Psi(x,t) = \frac{t^{-\beta(x)}}{\Gamma (1-\beta(x))}$. For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure \ref{fig:varyexp1} shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system. \\
 
-In \cite{Korabel2010}, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$. \\
+In @Korabel2010, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$. \\
 
 \begin{figure}[h]
-\includegraphics[scale=0.6]{varyexp1}
+\includegraphics[scale=0.6]{../img/varyexp1}
 \caption{\label{fig:varyexp1}
 Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta(x) = 0.25 + 0.5/(1+e^{-x})$. The time scale $T_0 = 2$ and $c = 40$.}
 \end{figure}
 
 \begin{figure}[h]
-\includegraphics[scale=0.6]{varyexp2}
+\includegraphics[scale=0.6]{../img/varyexp2}
 \caption{\label{fig:varyexp2}
 Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$. The time scale $T_0 = 2$ and $c = 40$.}
 \end{figure}
@@ -597,19 +572,11 @@ Density $P(x,t)$ at multiple times of a variable order subdiffusive system with 
 \paragraph{Spatially varying Tempering}  The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$. \\
 
 \begin{figure}[h]
-\includegraphics[scale=0.6]{varytempering}
+\includegraphics[scale=0.6]{../img/varytempering}
 \caption{\label{fig:varytempering}
 Density $P(x,t)$ at multiple times of a variable order subdiffusive system with spatially varying tempering. We set $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ and $\theta (x) = 1/(1+e^{0.5x})$. The time scale $T_0 = 2$ and $c = 40$.}
 \end{figure}
 
 
-
-\section{Conclusion}
-
-\section*{References}
-
-\bibliography{varyExp}
-
-
-
-\end{document}
+References {#references .unnumbered}
+==========
