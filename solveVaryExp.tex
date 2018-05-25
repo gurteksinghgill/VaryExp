@@ -63,7 +63,7 @@ it is consistent, conserves mass, generates strictly non-negative solutions,
 and has the same computational complexity.
 To illustrate applicability, we set up an interface problem, where two
 subdiffusive media with different anomalous exponents meet, and compute the
-evolution of probability densities at the interface. 
+evolution of probability densities at the interface.
 \end{abstract}
 
 \begin{keyword}
@@ -74,6 +74,10 @@ Anomalous Diffusion \sep Continuous Time Random Walk \sep Fractional Derivative 
 \end{frontmatter}
 
 \section{Introduction}
+
+Subdiffusive processes are characterized via the sublinear growth of their
+mean squared displacement: $\langle X_t \rangle \sim t^\alpha$, where
+$0 < \alpha < 1$. 
 
 Continuous Time Random Walks (CTRWs) \citep{Scher1975} generalize random walks by introducing heavy-tailed waiting times between jumps, and thus model ``subdiffusion'' via a sublinear growth of the mean squared displacement \citep{HLS2010b}.
 A large number of experiments have reproduced subdiffusive processes (see e.g.\ \cite{Metzler2000,TMT04,Wong04,Banks2005,Santamaria2006a,
@@ -86,11 +90,12 @@ and to model fractional diffusion of spatially varying order
 
 
 Parallel to the theoretical advancement of fractional Fokker-Planck equations, numerous methods for the computation of solutions to FFPEs have been developed, among them explicit methods \citep{Yuste2005}, implicit methods \citep{Langlands2005a}, spectral methods \citep{Li2009} and Galerkin methods \citep{Mustapha2011}.
-\cite{Hanert2014} have generalized the spectral method to the tempered fractional setting.  \cite{Chen2010}, among others, have developed computational methods to compute solutions of \emph{variable order} FFPEs; however, only their equation is consistent with a CTRW scaling limit representation \citep{Straka17}.
+\cite{Hanert2014} have generalized the spectral method to the tempered fractional setting.
+Among others, \cite{Chen2010} have developed computational methods to compute solutions of \emph{variable order} FFPEs; their equation is consistent with a CTRW scaling limit representation, but many aren't \citep{Straka17}.
 
 The recent Discrete Time Random Walk (DTRW) method \citep{Angstmann2015a,Angstmann2016a} calculates the probability distributions of a discrete stochastic process which approximates the continuum limit process whose distributions solve a FFPE. The advantage of this approach is that mass is necessarily conserved in each timestep, and that solutions are guaranteed to be nowhere negative.  Its premise is the usage of Shibuya-distributed (discrete and power-law tailed) waiting times, which allow for the calculation of a discrete memory kernel via a Z-transform.
 
-The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is thus applicable to any conceivable scaling limit of waiting time distributions.  What scaling limits of waiting time distributions are conceivable has been shown by \cite{Straka17} and \cite{BaeumerStraka16}:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
+The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is applicable to any conceivable scaling limit of waiting time distributions.  Which scaling limits of waiting time distributions are conceivable has been shown by \cite{Straka17} and \cite{BaeumerStraka16}:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
 From the single assumption that the Markov property applies at each jump time, it follows that $(Y_u,Z_u)$ must be a Langevin process driven by L\'evy noise.
 Thus $(Y_u, Z_u)$ is locally a L\'evy process governed by a local coefficient triple
 \begin{align} \label{eq:triple}
