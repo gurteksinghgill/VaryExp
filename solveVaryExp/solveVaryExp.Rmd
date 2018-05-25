@@ -73,14 +73,20 @@ where
 is called the Fokker--Planck operator. 
 CTRWs generalize random walks by allowing a larger class of waiting times 
 before each jump. This translates into a \emph{memory kernel} $V(y,t)$ 
-acting on the time variable in the equation \cite{BaeumerStraka16}: 
-\begin{align} \label{eq:FFPE}
+acting on the time variable in the equation [@BaeumerStraka16]: 
+\begin{align}
 \frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
 \int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
+\label{eq:FFPE}
 \end{align}
-Table \ref{tab:kernels} below gives an overview over the main forms of 
+The table below gives an overview over the main forms of 
 $V(y,s)$ that are of interest. 
 
+|                       | Kernel        | Laplace Transform | Reference | 
+| ------:               | :-------------: |:-------------:| :--------------: |
+| no memory             | $1$                             | $\lambda^{-1}$ | 
+| subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
+| tempered subdiff. | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 | 
 
 
 
