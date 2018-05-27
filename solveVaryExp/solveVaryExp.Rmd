@@ -20,7 +20,7 @@ abstract: |
   The algorithm is universal in the following sense: Any CTRW continuum limit
   can be mapped to a bivariate Langevin equation which tracks the cumulative sum
   of jumps and waiting times, and given the coefficients of this Langevin
-  equation, the algorithm will compute the desired probability densities.
+  equation, the algorithm will compute the desired probability distributions.
   Besides subdiffusion with space- and time-dependent drift, this approach
   covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
   tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
@@ -71,16 +71,17 @@ where
 +\frac{1}{2}\frac{\partial^2 }{\partial y^2}[a(y,t) g(y,t)]
 \end{align}
 is called the Fokker--Planck operator. 
-CTRWs generalize random walks by allowing a larger class of waiting times 
-before each jump. This translates into a \emph{memory kernel} $V(y,t)$ 
+CTRWs generalize random walks by allowing a larger, heavy-tailed 
+class of waiting times before each jump. This translates into a 
+_memory kernel_ $V(y,t)$ 
 acting on the time variable in the equation [@BaeumerStraka16]: 
 \begin{align}
 \frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
 \int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
 \label{eq:FFPE}
 \end{align}
-The table below gives an overview over the main forms of 
-$V(y,s)$ that are of interest. 
+The table below gives an overview over frequently studied forms of 
+$V(y,s)$:
 
 |                       | Kernel        | Laplace Transform | Reference | 
 | ------:               | :-------------: |:-------------:| :--------------: |
@@ -88,71 +89,62 @@ $V(y,s)$ that are of interest.
 | subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
 | tempered subdiff. | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 | 
 
+As the table indicates, most researchers have studied spatially constant
+memory kernels, without any dependence on the space variable $y$. 
+This implies a homogeneous distribution of waiting times throughout the
+entire medium, i.e. that diffusion is equally 
+anomalous everywhere.  This assumption is of course too restrictive for some 
+applications in biophysics [@Wong04; @StrakaFedotov14].  Media with two 
+different anomalous exponents exhibit interesting, paradoxical behaviour 
+[@Korabel2010; @Straka17], and have been studied (analytically) in the 
+physics literature [@Stickler2011; @Fedotov2012].
+
+Numerous methods for the computation of solutions to 
+_homogeneously anomalous_ diffusion have been developed, among them explicit 
+methods [@Yuste2005], implicit methods [@Langlands2005a], spectral methods 
+[@Li2009; @Hanert2014] and Galerkin methods [@Mustapha2011].
+In the domain of _inhomogeneously anomalous_ diffusion, several authors
+have developed computational methods for _variable order_ fractional Fokker--Planck Equations, but only the equation studied by @Chen2010
+is consistent with a CTRW scaling limit representation [@Straka17].
+
+The algorithm we introduce in this paper computes solutions to all 
+Fokker--Planck equations of type \eqref{eq:FFPE} 
+with spatially varying memory.  Its only requirement is that the 
+coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
+which tracks the cumulative sum of jumps resp. waiting times, 
+can be evaluated numerically.  
+
+Similarly to the Discrete Time Random Walk (DTRW) method 
+[@Angstmann2015a; @Angstmann2016a], our algorithm calculates the 
+probability distributions of a CTRW in discrete time 
+which approximates the continuum limit process. 
+The advantages of this approach are that mass is necessarily conserved 
+in each timestep; that solutions are guaranteed to be nowhere 
+negative; and that stochastic process convergence implies the 
+consistency of the algorithm.
+However, we do not rely on discrete Z-transforms, which means that 
+our method remains tractable not just for Shibuya-distributed waiting 
+times.
 
 
+We give a short account of bivariate Langevin dynamics 
+and their relevance for this article in Section 2.
 
+In Section 3 we construct a sequence of DTRWs which converges to 
+a CTRW continuum limit process, represented by a general bivariate 
+Langevin equation $(Y_u, Z_u)$.
+The stochastic process convergence guarantees the convergence of 
+probability distributions to the solutions $P(y,t)$ of 
+\eqref{eq:FFPE}, which translates into the consistency of the algorithm.
 
-. If the tail function of the waiting time 
-distribution follows a power law $\mathbf P[W > t] \sim t^{-\alpha}$, the long 
-time limit of CTRW dynamics is governed by a fractional Fokker-Planck 
-equation [@Metzler2000]. 
+In Section 4 we calculate the probability distributions of the DTRW.
+Because of the Semi-Markov property, this can be done via genearlized 
+master equations in a higher dimensional state space which tracks the 
+time since the last jump. 
 
-
-Continuous Time Random Walks (CTRWs) [@Scher1975] generalize random walks 
-by introducing heavy-tailed waiting times between jumps, and thus model 
-``subdiffusion'' via a sublinear growth of the mean squared displacement [@HLS2010b].
-A large number of experiments have reproduced subdiffusive processes (see e.g.\ ), which has stimulated further research in the modelling of subdiffusion via CTRWs in the last two decades. Since the introduction of the Fractional Fokker-Planck Equation (FFPE) by @BMK00, a powerful tool for the study of probability distributions of random walkers has become available.
-The FFPE has then been extended to include space- and time-dependent drift [@HLS10PRL],
-%reactions \cite{Henry2000,Langlands2008d,Froemberg2008a} and non-linear interaction @StrakaFedotov14.
-to model \emph{tempered} (or transient) fractional diffusion [@Gajda2010, @StrakaThesis, @Zhang2015, @Sabzikar2015]
-and to model fractional diffusion of spatially varying order
-[@Chechkin2005a, @ Straka17].
-
-
-Parallel to the theoretical advancement of fractional Fokker-Planck equations, numerous methods for the computation of solutions to FFPEs have been developed, among them explicit methods [@Yuste2005], implicit methods [@Langlands2005a], spectral methods 
-[@Li2009] and Galerkin methods [@Mustapha2011].
-@Hanert2014 have generalized the spectral method to the tempered fractional setting.
-Among others, @Chen2010 have developed computational methods to compute solutions of \emph{variable order} FFPEs; their equation is consistent with a CTRW scaling limit representation, but many aren't [@Straka17].
-
-The recent Discrete Time Random Walk (DTRW) method [@Angstmann2015a, @Angstmann2016a] calculates the probability distributions of a discrete stochastic process which approximates the continuum limit process whose distributions solve a FFPE. The advantage of this approach is that mass is necessarily conserved in each timestep, and that solutions are guaranteed to be nowhere negative.  Its premise is the usage of Shibuya-distributed (discrete and power-law tailed) waiting times, which allow for the calculation of a discrete memory kernel via a Z-transform.
-
-The Semi-Markov algorithm developed in this article generalizes the DTRW approach and at the same time maintains the advantageous properties ``conservation of mass'' and ``positivity of solutions''.  It avoids the use of a Z-transform and is applicable to any conceivable scaling limit of waiting time distributions.  Which scaling limits of waiting time distributions are conceivable has been shown by @Straka17 and @BaeumerStraka16:  First, the observation is made that from the bivariate process $(Y_u, Z_u)$ denoting a scaling limit of the cumulative sums of jumps and waiting times, the trajectory of a CTRW can be reconstructed.
-From the single assumption that the Markov property applies at each jump time, it follows that $(Y_u,Z_u)$ must be a Langevin process driven by L\'evy noise.
-Thus $(Y_u, Z_u)$ is locally a L\'evy process governed by a local coefficient triple
-\begin{align} \label{eq:triple}
-[a(y,t), \quad [b(y,t), d(y)], \quad \nu(w|y)]
-\end{align}
-of diffusivity, drift  and L\'evy jump measure; recall that a L\'evy measure must satisfy
-\begin{align}
-\label{eq:Levy-measure}
-\int_0^\infty (1 \wedge w) \nu(w|y)\,dw < \infty
-\end{align}
-where $a \wedge b := \min\{a, b\}$.
-
-In [@BaeumerStraka16], probability densities $P(y,t)$ of CTRW limits with a general representation as above were shown to be unique solutions to a FFPE
-in which $a(y,t)$ and $b(y,t)$ appear in the Fokker-Planck operator
-$\mathcal L^*$ as
-
-and where the memory kernel $V(y,t)$ is derived from $d(y)$ and $\nu(w|y)$ via its Laplace transform
-\begin{align} \label{eq:LT-renewal-measure}
-\hat V(y,\lambda) = \int_0^\infty e^{-\lambda t} V(y,t)\,dt
-= \frac{1}{d(y)\lambda + \int_0^\infty (1-e^{-\lambda w})
-\nu(w | y)\,dw}.
-\end{align}
-
-In [@Straka17], exact conditions on the distribution of jumps and waiting times were 
-given under which a sequence of CTRWs converges to a limit whose distributions $P(y,t)$ solve \eqref{eq:FFPE}.
-We give a short account of these results and their relevance for this article in Section 2.
-
-In Section 3 we construct a sequence $X^{(c)}_t$ of DTRWs (i.e.\ CTRWs with discrete jumps and waiting times) which converges as
-$c \to \infty$ to a CTRW limit process $X_t$ given in its most general form by \eqref{eq:triple}.  The stochastic process convergence guarantees the convergence of the probability distributions of $X_t$ to the solutions $P(y,t)$ of \eqref{eq:FFPE}, which translates into the consistency of the algorithm.
-
-In Section 4 we calculate the probability distributions of the DTRW $X^{(c)}_t$, by utilizing the Semi-Markov property: If the age $V^{(c)}_t$ (i.e.\ the time since the last jump) is tracked, then
-$(X^{(c)}_t, V^{(c)}_t)$ is a Markov process, and its joint probability distributions $\xi(i,j,k)$ can be calculated iteratively via master equations; the distribution of $X^{(c)}_t$ is then simply obtained by marginalizing. We also give details of boundary conditions on the space-time lattice.
-
-In Section 5 we compute probability distributions for two examples: a spatially variable order FFPE, and a FFPE with spatially varying tempering. Section 6 concludes.
-
-
+In Section 5 we consider an interface problem, where the anomalous 
+exponent interpolates continuously between two different anomalous 
+exponents for each half axis. Section 6 concludes. 
 
 
 
