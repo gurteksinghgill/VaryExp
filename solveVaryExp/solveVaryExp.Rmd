@@ -191,7 +191,7 @@ $\theta \ge 0$.
 A dependence of the Levy measure on the position $Y_u$ of the walker can be 
 achieved via letting 
 $$
-m(R) = \int_{u_1}^{u_2} \nu((w_1, w_2] |Y_u)\, du
+m(R) = \int_{u_1}^{u_2} \int_{w_1}^{w_2} \nu(w |Y_u)\,dw\, du
 $$
 
 for some _Levy measure_ $\nu(dw | y)$, which may vary with $y$. 
@@ -200,9 +200,9 @@ $$
 \int_0^\infty \min\{1, w\} \nu(dw | y) < \infty.
 $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space, 
-choosing $\nu(dw | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}\,dw$
+choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
-with exponent $\beta(Y_u)$ [@Straka17].
+with continuously changing exponent $\beta(Y_u)$ [@Straka17].
 
 It will be convenient to introduce the tail function of the Levy measure 
 $$
@@ -226,15 +226,17 @@ As shown by @BaeumerStraka16, the Fokker--Planck equation with memory
 functions, a unique solution $P(y,t)$. 
 This solution coincides with the probability distribution at time $t$ 
 of the subordinated process 
-$$
-X_t := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
-$$
+\begin{align}
+\label{eq:CTRWlimit}
+X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
+\end{align}
+$X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW. 
 
 
 # Discrete Langevin Dynamics
 
 Let $c > 0$ be a scaling parameter, and define a spatio-temporal grid $\#$
-with spacings $\chi = c^{-1/2}$ and $\tau^{-1/\alpha_0}$, where 
+with spacings $\chi = c^{-1/2}$ and $\tau = c^{-1/\alpha_0}$, where 
 $\alpha_0 \in (0,1)$ is some reference value to be defined later. 
 Assuming for simplicity that space is one-dimensional, the grid is embedded 
 in space-time $\mathbb R \times [0, \infty)$. 
@@ -242,124 +244,50 @@ In this section we define for each $c > 0$ a Langevin process
 $(Y^{(c)}_u, Z^{(c)}_u)$ with state space $\#$ such that as $c \to \infty$, 
 $(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$. 
 
-It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ is a jump process; 
+It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ must be a jump process hopping on $\#$. 
+Since $Y_u$ has continuous sample paths, nothing is gained by allowing 
+$Y^{(c)}_u$ to jump to non-neighbouring lattice sites. 
+Also, since $Z_u$ is increasing, $Z^{(c)}_u$ need not jump backwards. 
+It is helpful to view the sequence of grid points traversed by 
+$(Y^{(c)}_u, Z^{(c)}_u)$ as locations and times of a walker performing a 
+DTRW (discrete time random walk), with  jumps and waiting times given by 
+the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 
-\subsection{Waiting time distribution}
 
-The discrete waiting time distribution $\psi^{(c)}(w|x)$ we will define now will be supported on the points $\tau, 2\tau, 3\tau, \ldots$ where $\tau = 1/c$.
-We use an upper bar for the tail functions of the L\'evy measure
-\eqref{eq:Levy-measure} and the waiting time distribution $\psi^{(c)}(w|x)$:
+
+## Waiting time distribution
+
+Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first 
+define the following function: 
+$$
+H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y) | y\right)\right], \quad w > 0,
+$$
+where $a \wedge b := \min\{a, b\}$. 
+For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.  
+It is clear that for fixed $y$ and $\tau$ this function is decreasing from $1$
+to $0$ and is hence the tail function of some continuous probability measure.
+For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
 \begin{align}
-  \overline \nu(w|y) = \int_w^\infty \nu(w'|y)\,dw',
-  \quad
-  \overline \psi^{(c)}(w|x) = \sum_{w' = j\tau,\, w' > w} \psi^{(c)}(w'|x),
-  \quad w > 0.
-\end{align}
-For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.  We first define the tail function of a continuous probability measure via
-\begin{align}
-  H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y)\right)\right], \quad w > 0.
-\end{align}
-For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.\
-\begin{align} \label{eq:w-tau}
 w_\tau = j\tau \ge w > (j-1)\tau,
+\label{eq:w-tau}
 \end{align}
-and take the piecewise constant,
-right-continuous and non-increasing function
-\begin{align}
-  \overline\psi^{(c)}(w|y) := H^{(c)}(w_\tau|y), \quad w \ge 0
-\end{align}
-to be the tail probability function which defines $\psi^{(c)}(w|y)$.
-Equivalently, we have
+and thus define the piecewise constant, right-continuous and non-increasing 
+function
+$$
+\Psi^{(c)}(w|y) := H^{(c)}(w_\tau|y), \quad w \ge 0.
+$$
+For fixed $y$ and $c$, see that $\Psi^{(c)}(w|y)$ is the tail function of a 
+discrete probability measure, with probability function 
 \begin{align} \label{eq:def-psi}
-  \psi^{(c)}(j\tau | y) = H^{(c)}((j-1)\tau | y) - H^{(c)}(j\tau | y).
+  \psi^{(c)}(j\tau | y) = H^{(c)}((j-1)\tau | y) - H^{(c)}(j\tau | y), 
+  \quad j = 0, 1, 2, \ldots
 \end{align}
-Note that $\psi^{(c)}(0\tau | y) = 0$, i.e.\ waiting times are strictly positive.
-
-
-\subsection{Preliminary calculations}
-
-We need to calculate two sums which will be useful for checking conditions
-\eqref{eq:cond3} \& \eqref{eq:cond4} below.
-
-\begin{lemma}
-The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
-\begin{align}
-\label{eq:psi2delta}
-\int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
-&\to f(0),
-\\ \label{eq:psi-non-local}
-c \int g(w) \psi^{(c)}(w|y)\,dw
-= c \sum\limits_{j\tau > 0} g(j\tau) \psi^{(c)}(j\tau|y)
-&\to \int g(w) \nu(w|y)\,dw,
-\\ \label{eq:psi-local}
-c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
-= c \sum\limits_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
-&\to d(y)
-%- \varepsilon \overline{\nu}(\varepsilon)
-%+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
-+ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
-\end{align}
-where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
-\end{lemma}
-
-#### Proof
-\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\overline \psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
-For \eqref{eq:psi-non-local}, we first note that
-\begin{align*}
-c \overline \psi^{(c)}(w|y)
-= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
-\end{align*}
-If $g$ is differentiable, we may calculate
-\begin{align*}
-c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
-= c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
-= c \int_\varepsilon^\infty g'(w) \overline \psi^{(c)}(w|y)\,dw
-\\
-\to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
-= \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
-= \int_0^\infty g(w) \nu(w|y)\,dw
-\end{align*}
-But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local},
-first note that
-\begin{align*}
-1 = H^{(c)}(w|y)
-\Longleftrightarrow
-w \le \overline \nu^{-1}(c|y) + d(y)\tau =: C(y,c).
-\end{align*}
-Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
-We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
-$n_2 = \lfloor \varepsilon / \tau \rfloor$.
-Then by assumption \eqref{eq:ass4},
-\begin{align}
-\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
-\quad c \to \infty,
-\end{align}
-and hence
-\begin{align} \label{eq:to-dy}
-\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
-\end{align}
-Then the left side of \eqref{eq:psi-local} is
-\begin{align*}
-&c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
-= c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
-\\
-&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
-+ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
-\end{align*}
-where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
-In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
-$c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
-And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
-\begin{align*}
-d(y) - \varepsilon \overline \nu(\varepsilon | y)
-+ \int_0^\varepsilon \overline \nu(w)\,dw,
-\end{align*}
-which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
+Note that $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always 
+strictly positive.
 
 
 
-\subsection{Jump distribution}
+## Jump distribution
 
 We assume that the DTRW jumps can have one of the three values
 $\{-\chi, 0, +\chi\}$, where $\bar a = \sup\{a(x,t)\}$ and $\chi = (\bar a / c)^{1/2}$.
@@ -375,58 +303,63 @@ r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}.
 where $x$ is the location of the walker before the jump, and $t$ is the time at which the jump occurs.
 In order for $r, n$ and $\ell$ to be between $0$ and $1$,
 we need $\chi$ to be small  enough so that
-\begin{align}
-  \chi |b(x,t)|  \le a(x,t), \quad (x,t) \in \mathbb R \times [0,\infty).
+$$
+\chi |b(x,t)|  \le a(x,t), \quad (x,t) \in \mathbb R \times [0,\infty).
+$$
+
+## Convergence 
+
+At scale $c$, the probabilies $\psi^{(c)}(j\tau | y)$ and 
+$\ell^{(c)}(x,t)$, $n(x,t)$ and $r^{(c)}(x,t)$ define a jump kernel on $\#$, 
+which defines the distribution of jump $z$ and waiting time $w$ given the current 
+location of the walker at $x$ at time $t$:
+$$
+K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
++ n(x, t+w) \delta_0(z)
++ \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
+\psi^{(c)}(w|x).
+$$
+Note that we evaluate the jump probabilities at the end $t+w$ of a waiting time, 
+as is common for CTRWs. 
+Th. 2.1 in @Straka17 specifies conditions on $K^{(c)}(z,w|x,t)$ which imply 
+the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$, which we repeat 
+here for convenience: 
+\begin{align} \label{eq:cond1}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
+\\ \label{eq:cond2}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
+\\ \label{eq:cond3}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= d(x)
+\\
+\label{eq:cond4}
+\lim_{c \to \infty}
+c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
-For later use, we note that
-\begin{align}
-\label{eq:jump-calc-b}
-c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
-&= b(x,t+w)
-\\ \label{eq:jump-calc-a}
-c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
-\\ \label{eq:jump2delta}
-\int_\mathbb R f(z)\left[r^{(c)}(x,t) \delta_\chi(z)
-+ n(x,t) \delta_0(z) + \ell^{(c)}(x,t) \delta_{-\chi}(z) \right]\,dz
-&\to f(0)
-\end{align}
-as $c \to \infty$ for all bounded continuous $f$.
-
-
-\subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
-
-Assume now that a jump happens at time $t$ and the location of the walker immediately after the jump is $(x,t)$.
-Then the next jump will happen at time $t+w$, where $w$ is drawn from $\psi^{(c)}(w|y)$, and it is common to evaluate the probabilities to jump left/right/self-jump at time $t+w$.  In this case the space-time transition kernel governing the DTRW is
-\begin{align} \label{eq:DTRWSTJK}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
-  + n(x, t+w) \delta_0(z)
-  + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-Alternatively, one may assume that the bias to jump left/right/self-jump is evaluated at the \emph{beginning} of a waiting time, which leads to
-\begin{align} \label{eq:DTRWSTJK2}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
-  + n(x, t) \delta_0(z)
-  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
-
-To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
-\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
-
-
+for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin. 
+We give calculations in the appendix which confirm that the above four 
+conditions indeed hold for $K^{(c)}(z,w|x,t)$. 
 
 
 
 # Semi-Markov numeric scheme
 
-\subsection{Master equations}
+As described at the beginning of Section 3, 
+the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW, 
+for which we write $X^{(c)}(t)$. By Theorem 2.2 in @Straka17, 
+$X^{(c)}(t)$ converges to the CTRW coninuum limit process $X(t)$ 
+from \eqref{eq:CTRWlimit}.
+For large $c$, the probability distributions of $X^{(c)}(t)$ may hence be 
+taken as approximations of $P(y,t)$. 
+In this section, we derive master equations for the probability distributions
+of $X^{(c)}(t)$. 
 
-In the previous section, we have constructed a DTRW $X^{(c)}_t$ which  converges to the CTRW limit $X_t$ whose densities $P(y,t)$ solve \eqref{eq:FFPE}.  For large values of $c$, the probability densities of $X^{(c)}_t$ will hence be a good approximation of $P(y,t)$, see \eqref{eq:consistency} below.
-In this section, we calculate the probability distributions of $X^{(c)}_t$.
 
-Consider the space-time transition kernel \eqref{eq:DTRWSTJK} which defines the DTRW. Since all jumps are from $\{-\chi, 0, +\chi\}$, the walker will be hopping on a lattice embedded in $\mathbb R$.
+
+## Master equations
+
 Recall that a waiting time $W$ at a spatial lattice point $i\chi$ is drawn from $\psi^{(c)}(w | i\chi)$ and thus satisfies
 \begin{align}
 \mathbf P(W > j\tau) = H^{(c)}(j\tau | i\chi) =: h_{i,j}.
@@ -574,6 +507,128 @@ Density $P(x,t)$ at multiple times of a variable order subdiffusive system with 
 \caption{\label{fig:varytempering}
 Density $P(x,t)$ at multiple times of a variable order subdiffusive system with spatially varying tempering. We set $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ and $\theta (x) = 1/(1+e^{0.5x})$. The time scale $T_0 = 2$ and $c = 40$.}
 \end{figure}
+
+
+# Appendix {-}
+
+## Preliminary calculations
+
+We need to calculate two sums which will be useful for checking conditions
+\eqref{eq:cond3} \& \eqref{eq:cond4} below.
+
+\begin{lemma}
+The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
+\begin{align}
+\label{eq:psi2delta}
+\int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
+&\to f(0),
+\\ \label{eq:psi-non-local}
+c \int g(w) \psi^{(c)}(w|y)\,dw
+= c \sum\limits_{j\tau > 0} g(j\tau) \psi^{(c)}(j\tau|y)
+&\to \int g(w) \nu(w|y)\,dw,
+\\ \label{eq:psi-local}
+c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
+= c \sum\limits_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
+&\to d(y)
+%- \varepsilon \overline{\nu}(\varepsilon)
+%+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
++ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
+\end{align}
+where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
+\end{lemma}
+
+#### Proof
+\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\overline \psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+For \eqref{eq:psi-non-local}, we first note that
+\begin{align*}
+c \overline \psi^{(c)}(w|y)
+= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
+\end{align*}
+If $g$ is differentiable, we may calculate
+\begin{align*}
+c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g'(w) \overline \psi^{(c)}(w|y)\,dw
+\\
+\to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
+= \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
+= \int_0^\infty g(w) \nu(w|y)\,dw
+\end{align*}
+But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
+For \eqref{eq:psi-local},
+first note that
+\begin{align*}
+1 = H^{(c)}(w|y)
+\Longleftrightarrow
+w \le \overline \nu^{-1}(c|y) + d(y)\tau =: C(y,c).
+\end{align*}
+Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
+We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
+$n_2 = \lfloor \varepsilon / \tau \rfloor$.
+Then by assumption \eqref{eq:ass4},
+\begin{align}
+\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
+\quad c \to \infty,
+\end{align}
+and hence
+\begin{align} \label{eq:to-dy}
+\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
+\end{align}
+Then the left side of \eqref{eq:psi-local} is
+\begin{align*}
+&c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
+= c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
+\\
+&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
++ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
+\end{align*}
+where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
+In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
+$c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
+And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
+\begin{align*}
+d(y) - \varepsilon \overline \nu(\varepsilon | y)
++ \int_0^\varepsilon \overline \nu(w)\,dw,
+\end{align*}
+which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
+
+For later use, we note that
+\begin{align}
+\label{eq:jump-calc-b}
+c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
+&= b(x,t+w)
+\\ \label{eq:jump-calc-a}
+c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
+\\ \label{eq:jump2delta}
+\int_\mathbb R f(z)\left[r^{(c)}(x,t) \delta_\chi(z)
++ n(x,t) \delta_0(z) + \ell^{(c)}(x,t) \delta_{-\chi}(z) \right]\,dz
+&\to f(0)
+\end{align}
+as $c \to \infty$ for all bounded continuous $f$.
+
+
+\subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
+
+Assume now that a jump happens at time $t$ and the location of the walker immediately after the jump is $(x,t)$.
+Then the next jump will happen at time $t+w$, where $w$ is drawn from $\psi^{(c)}(w|y)$, and it is common to evaluate the probabilities to jump left/right/self-jump at time $t+w$.  In this case the space-time transition kernel governing the DTRW is
+\begin{align} \label{eq:DTRWSTJK}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
+  + n(x, t+w) \delta_0(z)
+  + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+Alternatively, one may assume that the bias to jump left/right/self-jump is evaluated at the \emph{beginning} of a waiting time, which leads to
+\begin{align} \label{eq:DTRWSTJK2}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
+  + n(x, t) \delta_0(z)
+  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
+
+To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
+\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
+
 
 
 References {#references .unnumbered}
