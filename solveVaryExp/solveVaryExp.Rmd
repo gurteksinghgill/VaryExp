@@ -87,14 +87,16 @@ $V(y,s)$:
 | ------:               | :-------------: |:-------------:| :--------------: |
 | no memory             | $1$                             | $\lambda^{-1}$ |
 | subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
-| tempered subdiff. | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 |
+| tempered subdiffusion | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 |
 
 As the table indicates, most researchers have studied spatially constant
 memory kernels, without any dependence on the space variable $y$.
 This implies a homogeneous distribution of waiting times throughout the
 entire medium, i.e. that diffusion is equally
 anomalous everywhere.  This assumption is of course too restrictive for some
-applications in biophysics [@Wong04; @StrakaFedotov14].  Media with two
+applications in biophysics [@Wong04; @StrakaFedotov14], e.g. when trapping 
+varies due to locally different compositions of the cellular matrix.
+Moreover, media with two
 different anomalous exponents exhibit interesting, paradoxical behaviour
 [@Korabel2010; @Straka17], and have been studied (analytically) in the
 physics literature [@Stickler2011; @Fedotov2012].
@@ -116,8 +118,8 @@ can be evaluated numerically.
 
 Similarly to the Discrete Time Random Walk (DTRW) method
 [@Angstmann2015a; @Angstmann2016a], our algorithm calculates the
-probability distributions of a CTRW in discrete time
-which approximates the continuum limit process.
+probability distributions of a CTRW whose waiting times are grid-valued, 
+and which approximates the continuum limit process.
 The advantages of this approach are that mass is necessarily conserved
 in each timestep; that solutions are guaranteed to be nowhere
 negative; and that stochastic process convergence implies the
@@ -126,123 +128,121 @@ However, we do not rely on discrete Z-transforms, which means that
 our method remains tractable not just for Shibuya-distributed waiting
 times.
 
-
+In the rest of this paper: 
 We give a short account of bivariate Langevin dynamics
 and their relevance for this article in Section 2.
-
 In Section 3 we construct a sequence of DTRWs which converges to
 a CTRW continuum limit process, represented by a general bivariate
 Langevin equation $(Y_u, Z_u)$.
 The stochastic process convergence guarantees the convergence of
 probability distributions to the solutions $P(y,t)$ of
 \eqref{eq:FFPE}, which translates into the consistency of the algorithm.
-
 In Section 4 we calculate the probability distributions of the DTRW.
 Because of the Semi-Markov property, this can be done via genearlized
 master equations in a higher dimensional state space which tracks the
 time since the last jump.
-
 In Section 5 we consider an interface problem, where the anomalous
 exponent interpolates continuously between two different anomalous
 exponents for each half axis. Section 6 concludes.
 
 
 
-# Stochastic solutions to Fokker-Planck equations with memory
+# Stochastic solution to Fokker-Planck equation with memory
 
-\subsection{Assumptions}
+The Langevin representation of a stochastic process whose distribution 
+$P(y,t)$ solves a Fokker-Planck equation with memory has been studied in 
+various articles [@Weron2008; @HLS10PRL; @Gajda2010; @Hahn11]. 
+Recently, a Langevin representation for inhomogeneous anomalous diffusion 
+was given [@Straka17]: Consider the bivariate Langevin process with state 
+space $\mathbb R \times [0,\infty)$
 
-The FPE with spatially varying memory in its general form \eqref{eq:FFPE} was derived from CTRW limits in @BaeumerStraka16.  We make the following assumptions on the CTRWs and the FPE \eqref{eq:FFPE} in this article:
-\begin{enumerate}
-\item
-The variance of the jumps is (uniformly) bounded.  This means that the CTRW limit $X_t$ has continuous sample paths\footnote{An extension of the theory in this article to infinite variance jumps is feasible: L\'evy noise would also enter the spatial component and an integral term would enter in the Fokker-Planck operator $\mathcal L^*$.}.
-\item
-The waiting times are strictly positive, and their distribution depends on space and not on time.
-\item
-The coefficient functions $a(y,t)$, $b(y,t)$, $d(y) \ge 0$ and $\nu(w|y)$ must be Lipschitz continuous and satisfy a linear growth condition.
-A sufficient condition is easily expressed in the case of spatially varying tempered subdiffusion, i.e.\ when
 \begin{align}
-\nu(w|y) = \frac{\beta(y)}{\Gamma(1-\beta(y))}\, w^{-1-\beta(y)}\,
-e^{-\theta(x) w}, \quad w > 0, \quad \theta(x) \ge 0, \quad \beta(y) \in (\varepsilon,1-\varepsilon)
+dY_u &= b(Y_u, Z_u)\, du + \sqrt{a(Y_u, Z_u)} \, dW_u 
+\label{eq:dY}\\
+dZ_u &= d(Y_u) \, du + \int_{w > 0} w\, n(dw, du)
+\label{eq:dZ}
 \end{align}
-for some $\varepsilon > 0$: All of the functions $a, b, d, \beta$ and $\theta$ are continuously differentiable with bounded derivatives.
-\item
-The tail function
-\begin{align}
-\overline \nu(w | y) = \int_w^\infty \nu(w'|y)\,dw', \quad w > 0
-\end{align}
-of the L\'evy measure is weakly singular at $0$, that is
-\begin{align} \label{eq:ass4}
-\overline \nu(w|y) \sim C w^{-\beta(y)}, \quad w \downarrow 0,
-\quad \beta(y) \in (0,1).
-\end{align}
-for some constant $C > 0$.
-\end{enumerate}
-The technical Condition 3 is needed for the existence of a unique solution to the Langevin equation defining $(Y_u, Z_u)$, see @Straka17.
-Condition 4 ensures that the L\'evy measure is infinite; if it wasn't, the CTRW limit could be an uninteresting CTRW process with finite numbers of steps in finite time intervals.  Moreover, it simplifies our analysis further below for \eqref{eq:psi-local}.
+
+Here, $u$ is auxiliary time, corresponding to the number of jumps;
+$b(y,t)$ and $a(y,t)$ are drift and diffusivity coefficients 
+(of units length resp. length$^2$ per unit _auxiliary time_) appearing in 
+\eqref{eq:FFPE}; 
+$d(y)$ is a temporal drift coefficient
+(unit physical time per unit auxiliary time). 
+Finally, $n(dw, du)$ denotes Levy noise that can be spatially varying. 
+Recall that Levy noise has a representation as a Counting Measure, 
+where for any rectangle 
+$R = (u_1, u_2) \times (w_1, w_2) \subset [0,\infty) \times (0,\infty)$ 
+the number of points $n(R)$ in $R$ is Poisson distributed, 
+and independent of any counts in other, disjoint rectangles [@Applebaum]. 
+The Poisson distribution, and hence the entire Counting Measure, is governed 
+by a unique mean measure $m(dw, du)$ which satisfies 
+$m(R) = \langle n(R) \rangle$. Examples:
+
+* If 
+$m(R) = (u_2 - u_1) \times \int_{w_1}^{w_2} \frac{\beta w^{-1-\beta}}{\Gamma(1-\beta)}\, dw$,
+then $Z_u$ has independent and identically distributed increments, i.e. it is 
+a Levy flight. 
+
+* Letting $m(R) = (u_2 - u_1) \times \int_{w_1}^{w_2} \frac{\beta w^{-1-\beta} e^{-\theta w}}{\Gamma(1-\beta)}\, dw$
+results in $Z_u$ being a _tempered stable Levy flight_ with tempering parameter 
+$\theta \ge 0$. 
+
+A dependence of the Levy measure on the position $Y_u$ of the walker can be 
+achieved via letting 
+$$
+m(R) = \int_{u_1}^{u_2} \nu((w_1, w_2] |Y_u)\, du
+$$
+
+for some _Levy measure_ $\nu(dw | y)$, which may vary with $y$. 
+Recall that a Levy measure is defined by the requirement 
+$$
+\int_0^\infty \min\{1, w\} \nu(dw | y) < \infty.
+$$
+For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space, 
+choosing $\nu(dw | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}\,dw$
+results in $Z_u$ having independent increments, which follow the stable distribution
+with exponent $\beta(Y_u)$ [@Straka17].
+
+It will be convenient to introduce the tail function of the Levy measure 
+$$
+\overline \nu(w | y) := \int_w^\infty \nu(dw | y), \quad w > 0.
+$$
+and its Laplace transform 
+$$
+\hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
+$$
+We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+uniquely and concisely represents the Langevin process
+\eqref{eq:dY}--\eqref{eq:dZ}.
+
+Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
+$$
+\hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
+= \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
+$$
+As shown by @BaeumerStraka16, the Fokker--Planck equation with memory 
+\eqref{eq:FFPE} has, under certain continuity conditions on the four coefficient 
+functions, a unique solution $P(y,t)$. 
+This solution coincides with the probability distribution at time $t$ 
+of the subordinated process 
+$$
+X_t := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
+$$
 
 
-\subsection{CTRWs as random walks in space-time}
+# Discrete Langevin Dynamics
 
-CTRWs are renewed after each jump: The next waiting time $w$ and the next jump $z$ are, given the current location $x$ and the current time $s$, independent of the past trajectory.  This means that the entire dynamics of a CTRW $X^{(c)}_t$ are captured in a space-time transition kernel
-\begin{align} \label{eq:STJK}
-K^{(c)}(z,w | x,s),
-\end{align}
-which is a bivariate probability density in $(z,w) \in \mathbb R \times [0,\infty)$ for every $(x,s) \in \mathbb R \times [0,\infty)$.  We assume the scaling parameter $c$ to be such that
-\begin{align}
-K^{(c)}(z,w | x,s) \to \delta_{(0,0)}(z,w), \quad c \to \infty,
-\end{align}
-where $\delta_{(0,0)}$ denotes the Dirac delta function at $(0,0)$. For more details, see @Straka17.
+Let $c > 0$ be a scaling parameter, and define a spatio-temporal grid $\#$
+with spacings $\chi = c^{-1/2}$ and $\tau^{-1/\alpha_0}$, where 
+$\alpha_0 \in (0,1)$ is some reference value to be defined later. 
+Assuming for simplicity that space is one-dimensional, the grid is embedded 
+in space-time $\mathbb R \times [0, \infty)$. 
+In this section we define for each $c > 0$ a Langevin process 
+$(Y^{(c)}_u, Z^{(c)}_u)$ with state space $\#$ such that as $c \to \infty$, 
+$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$. 
 
-
-\subsection{Conditions for convergence of CTRWs}
-
-Conditions for the convergence of $X^{(c)}_t$ to a limit $X_t$ whose probability distributions $P(y,t)$ solve \eqref{eq:FFPE} were given in @Straka17:
-\begin{align} \label{eq:cond1}
-\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
-\\ \label{eq:cond2}
-\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
-\\ \label{eq:cond3}
-\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= d(x)
-\\
-\label{eq:cond4}
-\lim_{c \to \infty}
-c \iint\limits_{|z| \ge \varepsilon \text{ or } w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int g(0,w) \nu(w|x)\,dw, \quad \varepsilon > 0,
-\end{align}
-where $g(z,w)$ is any bounded measurable function which vanishes in a neighbourhood of the origin.
-
-
-\subsection{Stochastic Process convergence}
-
-If the four conditions \eqref{eq:cond1}--\eqref{eq:cond4} are all satisfied, then the CTRW process $X^{(c)}_t$ converges to the CTRW limit $X_t$ in the sense of stochastic processes; we write
-\begin{align} \label{eq:CTRW-J1}
-\left \lbrace X^{(c)}_t \right\rbrace_{t \ge 0}
-\longrightarrow \left \lbrace X_t \right\rbrace_{t \ge 0}
-\quad \text{as } c \to \infty
-\quad \text{in } D(\mathbb R).
-\end{align}
-That is, $X^{(c)}_t$ and $X_t$ are viewed as random elements in the space $D(\mathbb R)$ of $\mathbb R$-valued trajectories with distributions $\mathbf P^{(c)}$ and $\mathbf P$, and $\mathbf P^{(c)}$ converges (weakly) to $\mathbf P$ as $c \to \infty$.
-This means that
-\begin{align}
-\lim_{c \to \infty} \int f(\omega)\mathbf P^{(c)}(d\omega)
-= \int f(\omega)\mathbf P(d\omega),
-\end{align}
-for all real valued, bounded and continuous $f$ defined on $D(\mathbb R)$.
-The Skorokhod $J_1$ topology on $D(\mathbb R)$ defines continuity on $D(\mathbb R)$. For full details, see @Whitt2010.  A consequence of the stochastic process convergence is the convergence of \emph{finite-dimensional distributions}: For any $0 \le t_1 < \ldots < t_n$, the distribution of the random vectors
-\begin{align}
-(X^{(c)}_{t_1}, \ldots, X^{(c)}_{t_n}) \to (X_{t_1}, \ldots, X_{t_n})
-\end{align}
-converges.
-
-
-
-# DTRW dynamics
-
-Recall our general aim: given a general FFPE of the form \eqref{eq:FFPE}, we would like to compute an approximation of the solution $P(y,t)$.  In this section, we give a space-time kernel \eqref{eq:STJK} which defines a \emph{DTRW}, i.e.\ a CTRW with discrete jumps and waiting times, which converges to a CTRW limit $X_t$ whose distributions $P(y,t)$ solve \eqref{eq:FFPE}.
-
+It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ is a jump process; 
 
 \subsection{Waiting time distribution}
 
@@ -302,7 +302,7 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
 \end{lemma}
 
-\begin{proof}
+#### Proof
 \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\overline \psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
 For \eqref{eq:psi-non-local}, we first note that
 \begin{align*}
@@ -356,7 +356,7 @@ d(y) - \varepsilon \overline \nu(\varepsilon | y)
 + \int_0^\varepsilon \overline \nu(w)\,dw,
 \end{align*}
 which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
-\end{proof}
+
 
 
 \subsection{Jump distribution}
