@@ -554,7 +554,7 @@ Density $P(x,t)$ at multiple times of a variable order subdiffusive system with 
 
 ## Preliminary calculations
 
-We need to calculate two sums which will be useful for checking conditions
+We need to calculate the following sums which will be useful for checking conditions
 \eqref{eq:cond3} \& \eqref{eq:cond4}.
 
 \begin{lemma}
@@ -578,19 +578,18 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
 \end{lemma}
 
-#### Proof
 
-\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\overline \psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
 For \eqref{eq:psi-non-local}, we first note that
-\begin{align*}
-c \overline \psi^{(c)}(w|y)
+$$
+c \Psi^{(c)}(w|y)
 = c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
-\end{align*}
+$$
 If $g$ is differentiable, we may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
-= c \int_\varepsilon^\infty g'(w) \overline \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g'(w) \Psi^{(c)}(w|y)\,dw
 \\
 \to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
@@ -599,11 +598,11 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
 For \eqref{eq:psi-local},
 first note that
-\begin{align*}
+$$
 1 = H^{(c)}(w|y)
 \Longleftrightarrow
-w \le \overline \nu^{-1}(c|y) + d(y)\tau =: C(y,c).
-\end{align*}
+w \le \overline \nu^{-1}(\tau^{-1}|y) + d(y)\tau =: C(y,c).
+$$
 Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
 We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
 $n_2 = \lfloor \varepsilon / \tau \rfloor$.
