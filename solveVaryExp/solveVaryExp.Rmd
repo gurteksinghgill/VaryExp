@@ -42,6 +42,10 @@ preamble: |
   \usepackage{amsthm,amsmath,amssymb,hyperref}
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
 \newtheorem{lemma}{Lemma}
 
 # Introduction
@@ -532,28 +536,31 @@ For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the di
 
 In @Korabel2010, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$.
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varyexp1}
-\caption{\label{fig:varyexp1}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta(x) = 0.25 + 0.5/(1+e^{-x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
+```{r varyexp1}
+source("../R/varyExp-DTSM.R")
+source("../R/varyExp-varyingexp1.R")
+```
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varyexp2}
-\caption{\label{fig:varyexp2}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
 
+
+
+```{r varyexp2}
+source("../R/varyExp-varyingexp2.R")
+```
+
+```{r varymixture}
+source("../R/varyExp-varyingmixture.R")
+```
 
 ### Spatially varying Tempering {-}
 
 The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varytempering}
-\caption{\label{fig:varytempering}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with spatially varying tempering. We set $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ and $\theta (x) = 1/(1+e^{0.5x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
+```{r varytempering}
+source("../R/varyExp-varyingtempering.R")
+```
+
+
 
 
 \appendix
