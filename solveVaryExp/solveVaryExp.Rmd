@@ -1,0 +1,676 @@
+---
+title: |
+  A Universal Algorithm for Continuum Limit Distributions of Continuous
+  Time Random Walks
+author:
+  - name: Gurtek Gill
+    email: rickygill01@gmail.com
+    affiliation: UNSW Sydney
+  - name: Peter Straka
+    email: p.straka@unsw.edu.au
+    affiliation: UNSW Sydney
+    footnote: Corresponding Author
+address:
+  - code: UNSW Sydney
+    address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
+abstract: |
+  We propose a universal "Semi-Markov algorithm" for the computation of
+  probability distributions of Continuous Time Random Walks (CTRWs) and their
+  continuum limits.
+  The algorithm is universal in the following sense: Any CTRW continuum limit
+  can be mapped to a bivariate Langevin equation which tracks the cumulative sum
+  of jumps and waiting times, and given the coefficients of this Langevin
+  equation, the algorithm will compute the desired probability distributions.
+  Besides subdiffusion with space- and time-dependent drift, this approach
+  covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
+  tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
+  order where the mixture can vary in space.
+  Our Semi-Markov algorithm generalizes the recent
+  "Discrete Time Random Walk" algorithm, and shares the same properties:
+  it is consistent, conserves mass, generates strictly non-negative solutions,
+  and has the same computational complexity.
+  To illustrate applicability, we set up an interface problem, where two
+  subdiffusive media with different anomalous exponents meet, and compute the
+  evolution of probability densities at the interface.
+journal: "An Elsevier Journal"
+date: "`r Sys.Date()`"
+bibliography: varyExp.bib
+output:
+  rticles::elsevier_article:
+    number_sections: true
+preamble: |
+  \usepackage{amsthm,amsmath,amssymb,hyperref}
+---
+
+\newtheorem{lemma}{Lemma}
+
+# Introduction
+
+Subdiffusive transport processes are characterized via a sublinear growth of the
+mean squared displacement: $\langle X_t \rangle \sim t^\alpha$, where
+$0 < \alpha < 1$. Such processes are usually modelled either by fractional
+Brownian motion or Continuous Time Random Walks (CTRWs), depending on
+whether the auto-correlation of jumps decays slowly or the waiting times
+between jumps are heavy-tailed with parameter $\alpha$, modelling traps
+or dead ends [@HLS2010b].
+The CTRW model has proven to be a particularly useful model, predominantly in
+biophysics
+[@Metzler2000; @TMT04; @Wong04; @Banks2005; @Santamaria2006a; @Hofling2012; @Regner2013],
+but also in groundwater hydrology [@Berkowitz2008; @SchumerMIM] and
+econophysics [@Scalas2006].
+
+A modelling framework for the evolution of probability densities of random walks
+is given by the Fokker--Planck equation [@gardiner2004handbook]:
+\begin{align}
+\frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) P(y,t) + \delta_{(0,0)}(y,t),
+\end{align}
+where
+\begin{align}
+\mathcal L^* g(y,t)
+&= -\frac{\partial }{\partial y}[b(y,t) g(y,t)]
++\frac{1}{2}\frac{\partial^2 }{\partial y^2}[a(y,t) g(y,t)]
+\end{align}
+is called the Fokker--Planck operator.
+CTRWs generalize random walks by allowing a larger, heavy-tailed
+class of waiting times before each jump. This translates into a
+_memory kernel_ $V(y,t)$
+acting on the time variable in the equation [@BaeumerStraka16]:
+\begin{align}
+\frac{\partial P(y,t)}{\partial t} = \mathcal L^*(y,t) \left[ \frac{\partial}{\partial t}
+\int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
+\label{eq:FFPE}
+\end{align}
+The table below gives an overview over frequently studied forms of
+$V(y,s)$:
+
+|                       | Kernel        | Laplace Transform | Reference |
+| ------:               | :-------------: |:-------------:| :--------------: |
+| no memory             | $1$                             | $\lambda^{-1}$ |
+| subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
+| tempered subdiffusion | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 |
+
+As the table indicates, most researchers have studied spatially constant
+memory kernels, without any dependence on the space variable $y$.
+This implies a homogeneous distribution of waiting times throughout the
+entire medium, i.e. that diffusion is equally
+anomalous everywhere.  This assumption is of course too restrictive for some
+applications in biophysics [@Wong04; @StrakaFedotov14], e.g. when trapping
+varies due to locally different compositions of the cellular matrix.
+Moreover, media with two
+different anomalous exponents exhibit interesting, paradoxical behaviour
+[@Korabel2010; @Straka17], and have been studied (analytically) in the
+physics literature [@Stickler2011; @Fedotov2012].
+
+Numerous methods for the computation of solutions to
+_homogeneously anomalous_ diffusion have been developed, among them explicit
+methods [@Yuste2005], implicit methods [@Langlands2005a], spectral methods
+[@Li2009; @Hanert2014] and Galerkin methods [@Mustapha2011].
+In the domain of _inhomogeneously anomalous_ diffusion, several authors
+have developed computational methods for _variable order_ fractional Fokker--Planck Equations, but only the equation studied by @Chen2010
+is consistent with a CTRW scaling limit representation [@Straka17].
+
+The algorithm we introduce in this paper computes solutions to all
+Fokker--Planck equations of type \eqref{eq:FFPE}
+with spatially varying memory.  Its only requirement is that the
+coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
+which tracks the cumulative sum of jumps resp. waiting times,
+can be evaluated numerically.
+
+Similarly to the Discrete Time Random Walk (DTRW) method
+[@Angstmann2015a; @Angstmann2016a], our algorithm calculates the
+probability distributions of a CTRW whose waiting times are grid-valued,
+and which approximates the continuum limit process.
+The advantages of this approach are that mass is necessarily conserved
+in each timestep; that solutions are guaranteed to be nowhere
+negative; and that stochastic process convergence implies the
+consistency of the algorithm.
+However, we do not rely on discrete Z-transforms, which means that
+our method remains tractable not just for Shibuya-distributed waiting
+times.
+
+In the rest of this paper:
+We give a short account of bivariate Langevin dynamics
+and their relevance for this article in Section 2.
+In Section 3 we construct a sequence of DTRWs which converges to
+a CTRW continuum limit process, represented by a general bivariate
+Langevin equation $(Y_u, Z_u)$.
+The stochastic process convergence guarantees the convergence of
+probability distributions to the solutions $P(y,t)$ of
+\eqref{eq:FFPE}, which translates into the consistency of the algorithm.
+In Section 4 we calculate the probability distributions of the DTRW.
+Because of the Semi-Markov property, this can be done via genearlized
+master equations in a higher dimensional state space which tracks the
+time since the last jump.
+In Section 5 we consider an interface problem, where the anomalous
+exponent interpolates continuously between two different anomalous
+exponents for each half axis. Section 6 concludes.
+
+
+
+# Stochastic solution to Fokker-Planck equation with memory
+
+The Langevin representation of a stochastic process whose distribution
+$P(y,t)$ solves a Fokker-Planck equation with memory has been studied in
+various articles [@Weron2008; @HLS10PRL; @Gajda2010; @Hahn11].
+Recently, a Langevin representation for inhomogeneous anomalous diffusion
+was given [@Straka17]: Consider the bivariate Langevin process with state
+space $\mathbb R \times [0,\infty)$
+
+\begin{align}
+dY_u &= b(Y_u, Z_u)\, du + \sqrt{a(Y_u, Z_u)} \, dW_u
+\label{eq:dY}\\
+dZ_u &= d(Y_u) \, du + \int_{w > 0} w\, n(dw, du)
+\label{eq:dZ}
+\end{align}
+
+Here, $u$ is auxiliary time, corresponding to the number of jumps;
+$b(y,t)$ and $a(y,t)$ are drift and diffusivity coefficients
+(of units length resp. length$^2$ per unit _auxiliary time_) appearing in
+\eqref{eq:FFPE};
+$d(y)$ is a temporal drift coefficient
+(unit physical time per unit auxiliary time).
+Finally, $n(dw, du)$ denotes Levy noise that can be spatially varying.
+Recall that Levy noise has a representation as a Counting Measure,
+where for any rectangle
+$R = (u_1, u_2) \times (w_1, w_2) \subset [0,\infty) \times (0,\infty)$
+the number of points $n(R)$ in $R$ is Poisson distributed,
+and independent of any counts in other, disjoint rectangles [@Applebaum].
+The Poisson distribution, and hence the entire Counting Measure, is governed
+by a unique mean measure $m(dw, du)$ which satisfies
+$m(R) = \langle n(R) \rangle$. Examples:
+
+* If
+$m(R) = (u_2 - u_1) \times \int_{w_1}^{w_2} \frac{\beta w^{-1-\beta}}{\Gamma(1-\beta)}\, dw$,
+then $Z_u$ has independent and identically distributed increments, i.e. it is
+a Levy flight.
+
+* Letting $m(R) = (u_2 - u_1) \times \int_{w_1}^{w_2} \frac{\beta w^{-1-\beta} e^{-\theta w}}{\Gamma(1-\beta)}\, dw$
+results in $Z_u$ being a _tempered stable Levy flight_ with tempering parameter
+$\theta \ge 0$.
+
+A dependence of the Levy measure on the position $Y_u$ of the walker can be
+achieved via letting
+$$
+m(R) = \int_{u_1}^{u_2} \int_{w_1}^{w_2} \nu(w |Y_u)\,dw\, du
+$$
+
+for some _Levy measure_ $\nu(dw | y)$, which may vary with $y$.
+Recall that a Levy measure is defined by the requirement
+$$
+\int_0^\infty \min\{1, w\} \nu(dw | y) < \infty.
+$$
+For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
+choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
+results in $Z_u$ having independent increments, which follow the stable distribution
+with continuously changing exponent $\beta(Y_u)$ [@Straka17].
+
+It will be convenient to introduce the tail function of the Levy measure
+$$
+\overline \nu(w | y) := \int_w^\infty \nu(dw | y), \quad w > 0.
+$$
+and its Laplace transform
+$$
+\hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
+$$
+We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+uniquely and concisely represents the Langevin process
+\eqref{eq:dY}--\eqref{eq:dZ}.
+
+Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
+$$
+\hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
+= \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
+$$
+As shown by @BaeumerStraka16, the Fokker--Planck equation with memory
+\eqref{eq:FFPE} has, under certain continuity conditions on the four coefficient
+functions, a unique solution $P(y,t)$.
+This solution coincides with the probability distribution at time $t$
+of the subordinated process
+\begin{align}
+\label{eq:CTRWlimit}
+X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
+\end{align}
+$X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW.
+
+
+# Discrete Langevin Dynamics
+
+Let $c > 0$ be a scaling parameter, and define a spatio-temporal grid $\#$
+with spacings $\chi = c^{-1/2}$ and $\tau = c^{-1/\alpha_0}$, where
+$\alpha_0 \in (0,1)$ is some reference value to be defined later.
+Assuming for simplicity that space is one-dimensional, the grid is embedded
+in space-time $\mathbb R \times [0, \infty)$.
+In this section we define for each $c > 0$ a Langevin process
+$(Y^{(c)}_u, Z^{(c)}_u)$ with state space $\#$ such that as $c \to \infty$,
+$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$.
+
+It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ must be a jump process hopping on $\#$.
+Since $Y_u$ has continuous sample paths, nothing is gained by allowing
+$Y^{(c)}_u$ to jump to non-neighbouring lattice sites.
+Also, since $Z_u$ is increasing, $Z^{(c)}_u$ need not jump backwards.
+It is helpful to view the sequence of grid points traversed by
+$(Y^{(c)}_u, Z^{(c)}_u)$ as locations and times of a walker performing a
+DTRW (discrete time random walk), with  jumps and waiting times given by
+the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
+
+
+
+## Waiting time distribution
+
+Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first
+define the following function:
+$$
+H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y) | y\right)\right], \quad w > 0,
+$$
+where $a \wedge b := \min\{a, b\}$.
+For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.
+It is clear that for fixed $y$ and $\tau$ this function is decreasing from $1$
+to $0$ and is hence the tail function of some continuous probability measure.
+For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
+\begin{align}
+w_\tau = j\tau \ge w > (j-1)\tau,
+\label{eq:w-tau}
+\end{align}
+and thus define the piecewise constant, right-continuous and non-increasing
+function
+$$
+\Psi^{(c)}(w|y) := H^{(c)}(w_\tau|y), \quad w \ge 0.
+$$
+For fixed $y$ and $c$, see that $\Psi^{(c)}(w|y)$ is the tail function of a
+discrete probability measure, with probability function
+\begin{align} \label{eq:def-psi}
+  \psi^{(c)}(j\tau | y) = H^{(c)}((j-1)\tau | y) - H^{(c)}(j\tau | y),
+  \quad j = 0, 1, 2, \ldots
+\end{align}
+Note that $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
+strictly positive.
+
+
+
+## Jump distribution
+
+We assume that the DTRW jumps can have one of the three values
+$\{-\chi, 0, +\chi\}$, where $\bar a = \sup\{a(x,t)\}$ and $\chi = (\bar a / c)^{1/2}$.
+The probabilities to jump left, to ``self-jump'' (i.e.\ jump back to the
+original location), and to jump right, are given by
+\begin{gather*}
+\ell^{(c)}(x,t) = \frac{a(x,t) - \chi b(x,t)}{2 \bar a},
+\quad
+n(x,t) = 1 - a(x,t)/\bar a,
+\quad
+r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}.
+\end{gather*}
+where $x$ is the location of the walker before the jump, and $t$ is the time at which the jump occurs.
+In order for $r, n$ and $\ell$ to be between $0$ and $1$,
+we need $\chi$ to be small  enough so that
+$$
+\chi |b(x,t)|  \le a(x,t), \quad (x,t) \in \mathbb R \times [0,\infty).
+$$
+
+## Convergence
+
+At scale $c$, the probabilies $\psi^{(c)}(j\tau | y)$ and
+$\ell^{(c)}(x,t)$, $n(x,t)$ and $r^{(c)}(x,t)$ define a jump kernel on $\#$,
+which defines the distribution of jump $z$ and waiting time $w$ given the current
+location of the walker at $x$ at time $t$:
+\begin{align}
+K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
++ n(x, t+w) \delta_0(z)
++ \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
+\psi^{(c)}(w|x).
+\label{eq:K}
+\end{align}
+Note that we evaluate the jump probabilities at the end $t+w$ of a waiting time,
+as is common for CTRWs.
+Th. 2.1 in @Straka17 specifies conditions on $K^{(c)}(z,w|x,t)$ which imply
+the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$, which we repeat
+here for convenience:
+\begin{align} \label{eq:cond1}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
+\\ \label{eq:cond2}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
+\\ \label{eq:cond3}
+\lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
+c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= d(x)
+\\
+\label{eq:cond4}
+\lim_{c \to \infty}
+c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
+\end{align}
+for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
+We give calculations in the appendix which confirm that the above four
+conditions indeed hold for $K^{(c)}(z,w|x,t)$.
+
+# Semi-Markov numeric scheme
+
+As described at the beginning of Section 3,
+the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
+for which we write $X^{(c)}(t)$. By Theorem 2.2 in @Straka17,
+$X^{(c)}(t)$ converges to the CTRW coninuum limit process $X(t)$
+from \eqref{eq:CTRWlimit}.
+For large $c$, the probability distributions of $X^{(c)}(t)$ may hence be
+taken as approximations of $P(y,t)$.
+In this section, we derive master equations for the probability distributions
+of $X^{(c)}(t)$.
+
+
+As described at the beginning of Section 3,
+the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
+for which we write $X^{(c)}(t)$. By Theorem 2.2 in @Straka17,
+\begin{equation}
+X^{(c)}(t) \text{ converges to the CTRW continuum limit process } X(t)
+\label{eq:CTRW-J1}
+\end{equation}
+from \eqref{eq:CTRWlimit}.
+(Convergence here means weak convergence with respect to the $J_1$ topology
+of right-continuous sample paths with left-hand limits, see @Whitt2010.)
+For large $c$, the probability distributions of $X^{(c)}(t)$ may hence be
+taken as approximations of $P(y,t)$.
+In this section, we derive master equations for the probability distributions
+of $X^{(c)}(t)$.
+
+
+
+## Semi-Markov property
+
+A DTRW starting at $x$ at time $t$
+is defined by the jump kernel \eqref{eq:K} as follows: first, a waiting
+time is drawn from the distribution $\psi^{(c)}(w|x)$; then a jump left or right or
+a self-jump is drawn from the probabilities $\ell^{(c)}(x,t+w)$, $r^{(c)}(x,t+w)$
+and $n(x,t+w)$.
+The Semi-Markov approach embeds $X^{(c)}(t)$ into a Markov process as follows:
+Define the _age_ of a walker as the time that has passed since he last arrived
+at his current location. In each timestep $\tau$, either the waiting time has
+not expired yet, in which case no jump occurs and age is increased by $\tau$;
+or age is reset to $0$ and a jump occurs. Since this recipe determines the
+future evolution of position and age based on only the current position and age,
+the process is Markovian, and it is straightforward to derive master equations.
+
+Recall that a waiting time $W$ at a spatial lattice point $i\chi$ is drawn from $\psi^{(c)}(w | i\chi)$ and thus satisfies
+$$
+\mathbf P(W > j\tau) = H^{(c)}(j\tau | i\chi) =: h_{i,j}.
+$$
+Conditional on $W > j\tau$, the probability that $W > (j + 1) \tau$ is
+$$
+\mathbf P(W > (j + 1)\tau | W > j \tau) = h_{i,j+1} / h_{i,j}.
+$$
+That is, if at time $k\tau$, position and age are $(x_k, v_k) = (i,j)$,
+then at time $(k+1)\tau$
+
+* with probability $h_{i,j+1} / h_{i,j}$ we have
+  $(x_{k+1}, v_{k+1}) = (x_k, v_k + 1)$, and
+* with probability $1 - h_{i,j+1} / h_{i,j}$ we have
+  $(x_{k+1}, v_{k+1}) = (x_k + \zeta, 0)$,
+
+where $\zeta \in \{-1, 0, +1\}$ with probabilities $\ell^{(c)}(i\chi, (k+1)\tau)$,
+$n(i\chi, (k+1)\tau)$ and $r^{(c)}(i\chi, (k+1)\tau)$.
+
+The above dynamics uniquely determine the stepwise evolution of $(x_k, v_k)$.
+We write
+$\xi^k_{i,j} = \mathbf P(x_k = i, v_k = j)$
+for the probability distribution of $(i,j)$ at time $k$.
+The master equations for $\xi^k_{i,j}$ then read:
+\begin{align}
+\label{eq:GME1}
+\xi^{k+1}_{i,j} &= \frac{h_{i,j}}{h_{i,j-1}}\, \xi^k_{i,j-1}, \quad 1 \le j < J-1,
+\\
+\label{eq:GME2}
+\xi^{k+1}_{i,0} &= \sum_{j=0}^J\left(1 - \frac{h_{i,j+1}}{h_{i,j}}\right)
+(\ell^k_{i+1} \xi^k_{i+1, j} + r^k_{i-1} \xi^k_{i-1,j}
+  + n^k_{i,j} \xi^k_{i,j})
+\end{align}
+The line \eqref{eq:GME1} states that for a walker to have age $j \ge 1$,
+it must have had age $j - 1$ in the previous time step, and not jumped.
+The line \eqref{eq:GME2} states that for a walker to have age $j = 0$,
+it must have jumped to its location $i$ in the previous time step, from a
+neighbouring lattice site or from $i$ itself. The probability mass of all
+walkers jumping from site $i$ during time step $k \to k+1$ is
+$\sum_{j=0}^J \left(1 - h_{i,j+1} / h_{i,j}\right) \xi^k_{i,j}$,
+which is redistributed according to the probabilities $r^{k+1}_{i,j}$,
+$\ell^{k+1}_{i,j}$ and $c^{k+1}_{i,j}$.
+This interpretation shows that \eqref{eq:GME1}--\eqref{eq:GME2}
+**conserve probability mass**.
+
+Iterating the equation pair \eqref{eq:GME1}--\eqref{eq:GME2} from some initial
+condition computes the evolution of the joint probability distribution of
+position and age.
+The marginal distribution of the position is calculated simply via
+$$
+\mathbf P(X^{(c)}_t = i\chi) =: \rho^k_i = \sum_{j=0}^J \xi^k_{i,j},
+\quad k = \lfloor t /\tau \rfloor.
+$$
+Here we note that $X^{(c)}(t) = X^{(c)}(t_\tau)$, where $t_\tau$ is
+the left-nearest lattice point defined exactly as $w_\tau$ in \eqref{eq:w-tau}.
+
+
+## Boundary conditions
+
+In practice, one can only allocate a finite number $J$ of points to the
+lattice of ages.  If we cannot allocate
+$\lfloor T/\tau \rfloor$ lattice points, where $T$ is the largest time of interest, then it is possible that the age of walkers may reach the end of the lattice. In this case, and if the walker does not jump in the next time step, we do not increase its age any further, until it eventually does jump:
+$$
+\xi^{k+1}_{i,J} = \frac{h_{i,J}}{h_{i,J-1}} \xi^k_{i,J-1}
++ \frac{h_{i,J+1}}{h_{i,J}} \xi^k_{i,J}.
+$$
+Finally, assuming that the spatial coordinates of the lattice go from
+$-I$ to $I$, we implement Neumann boundary conditions by placing a walker
+back on the boundary whenever it would otherwise have jumped off the lattice,
+that is:
+\begin{align}
+  \ell^k_{-I} &= 0, & n^k_{-I} &= \ell(-I\chi, k\tau) + n(-I\chi, k\tau),
+  & r^k_{-I} &= r(-I\chi, k\tau),
+  \\
+  \ell^k_I &= \ell(I \chi, k\tau), & n^k_{I} &= n(I\chi, k\tau) + r(I\chi, k\tau),
+  & r^k_{I} &= 0
+\end{align}
+
+
+
+## Properties of the algorithm
+
+
+### Positivity {-}
+
+From \eqref{eq:GME1}--\eqref{eq:GME2}, it is evident that the $\xi^k_{i,j}$ are
+necessarily non-negative, and hence the solution $\rho^k_i$ cannot be negative.
+
+### Consistency of the algorithm {-}
+
+Due to the convergence \eqref{eq:CTRW-J1}, we have
+\begin{align} \label{eq:consistency}
+  \sum_{i=-I}^I f(i\chi) \rho^{\lfloor t/\tau \rfloor}_i
+  = \langle f(X^{(c)}_t) \rangle
+  \longrightarrow \langle f(X_t) \rangle
+  \quad \text{ as } c \to \infty,
+\end{align}
+for all bounded continuous real-valued $f$ defined on $\mathbb R$.
+Assuming that the distribution of $X_t$ has a probability density,
+we may take $f$ to be an indicator function of an interval $(a,b)$,
+and \eqref{eq:consistency} reads
+\begin{align}
+  \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
+  \longrightarrow
+  \mathbf P(a < X_t < b) \quad \text{ as } c \to \infty.
+\end{align}
+
+
+### Equivalence with DTRW approach {-}
+
+The Discrete Time Random Walk algorithm by
+@Angstmann2015a assumes discrete waiting times with the Sibuya
+distribution, whose tail function $\Psi(n)$ has the asymptotics
+$\Psi(n) \sim n^{-\beta}$.
+In \eqref{eq:GME2}, see that we have $\xi^k_{i,j} = \xi^{k-j}_{i,0} h_{i,j}$,
+by telescoping \eqref{eq:GME1} and $h_{i,0} = 1$.  Hence
+\eqref{eq:GME2} rewrites to
+$$
+\xi^{k+1}_{i,0} = \sum_{j=0}^J (h_{i,j} - h_{i,j+1})
+(\ell^{k+1}_{i+1} \xi^{k-j}_{i+1, 0} + r^{k+1}_{i-1} \xi^{k-j}_{i-1,0} + c^{k+1}_{i,j} \xi^{k-j}_{i,0}),
+$$
+assuming that $h_{i,j}$ is constant in $i$ (homogeneous waiting times).
+Since $h_{i,j} - h_{i,j+1}$ is the probability of a waiting time being
+$j+1$, one sees the equivalence of methods by comparing with Equation (16)
+in @Angstmann2015a, if we choose $h_{i,j} = \Psi(j)$.
+
+# Examples {#sec:examples}
+
+Within this semi-Markov framework, we may now implement the above numeric scheme to calculate approximations of the densities of a variety of CTRW limits. By allowing for various initial residence times [@Gill2016], waiting time distributions $\psi (\omega | x)$ and spatially varying exponents $\beta (x)$ these are able to model a very wide set of subdiffusive systems.
+
+### Spatially varying exponent {-}
+
+For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the diffusivity we have $a(x) = T_0^{-\beta(x)}$ where $T_0$ is the time scale and waiting time distribution tail function $\Psi(x,t) = \frac{t^{-\beta(x)}}{\Gamma (1-\beta(x))}$. For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure \ref{fig:varyexp1} shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
+
+In @Korabel2010, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$.
+
+\begin{figure}[h]
+\includegraphics[scale=0.6]{../img/varyexp1}
+\caption{\label{fig:varyexp1}
+Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta(x) = 0.25 + 0.5/(1+e^{-x})$. The time scale $T_0 = 2$ and $c = 40$.}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[scale=0.6]{../img/varyexp2}
+\caption{\label{fig:varyexp2}
+Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$. The time scale $T_0 = 2$ and $c = 40$.}
+\end{figure}
+
+
+### Spatially varying Tempering {-}
+
+The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
+
+\begin{figure}[h]
+\includegraphics[scale=0.6]{../img/varytempering}
+\caption{\label{fig:varytempering}
+Density $P(x,t)$ at multiple times of a variable order subdiffusive system with spatially varying tempering. We set $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ and $\theta (x) = 1/(1+e^{0.5x})$. The time scale $T_0 = 2$ and $c = 40$.}
+\end{figure}
+
+
+\appendix
+
+# Appendix
+
+## Preliminary calculations
+
+We need to calculate the following sums which will be useful for checking conditions
+\eqref{eq:cond3} \& \eqref{eq:cond4}.
+
+\begin{lemma}
+The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
+\begin{align}
+\label{eq:psi2delta}
+\int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
+&\to f(0),
+\\ \label{eq:psi-non-local}
+c \int g(w) \psi^{(c)}(w|y)\,dw
+= c \sum\limits_{j\tau > 0} g(j\tau) \psi^{(c)}(j\tau|y)
+&\to \int g(w) \nu(w|y)\,dw,
+\\ \label{eq:psi-local}
+c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
+= c \sum\limits_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
+&\to d(y)
+%- \varepsilon \overline{\nu}(\varepsilon)
+%+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
++ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
+\end{align}
+where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
+\end{lemma}
+
+
+_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+For \eqref{eq:psi-non-local}, we first note that
+$$
+c \Psi^{(c)}(w|y)
+= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
+$$
+If $g$ is differentiable, we may calculate
+\begin{align*}
+c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g'(w) \Psi^{(c)}(w|y)\,dw
+\\
+\to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
+= \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
+= \int_0^\infty g(w) \nu(w|y)\,dw
+\end{align*}
+But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
+For \eqref{eq:psi-local},
+first note that
+$$
+1 = H^{(c)}(w|y)
+\Longleftrightarrow
+w \le \overline \nu^{-1}(\tau^{-1}|y) + d(y)\tau =: C(y,c).
+$$
+Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
+We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
+$n_2 = \lfloor \varepsilon / \tau \rfloor$.
+Then by assumption \eqref{eq:ass4},
+\begin{align}
+\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
+\quad c \to \infty,
+\end{align}
+and hence
+\begin{align} \label{eq:to-dy}
+\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
+\end{align}
+Then the left side of \eqref{eq:psi-local} is
+\begin{align*}
+&c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
+= c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
+\\
+&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
++ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
+\end{align*}
+where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
+In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
+$c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
+And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
+\begin{align*}
+d(y) - \varepsilon \overline \nu(\varepsilon | y)
++ \int_0^\varepsilon \overline \nu(w)\,dw,
+\end{align*}
+which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
+
+For later use, we note that
+\begin{align}
+\label{eq:jump-calc-b}
+c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
+&= b(x,t+w)
+\\ \label{eq:jump-calc-a}
+c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
+\\ \label{eq:jump2delta}
+\int_\mathbb R f(z)\left[r^{(c)}(x,t) \delta_\chi(z)
++ n(x,t) \delta_0(z) + \ell^{(c)}(x,t) \delta_{-\chi}(z) \right]\,dz
+&\to f(0)
+\end{align}
+as $c \to \infty$ for all bounded continuous $f$.
+
+
+\subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
+
+Assume now that a jump happens at time $t$ and the location of the walker immediately after the jump is $(x,t)$.
+Then the next jump will happen at time $t+w$, where $w$ is drawn from $\psi^{(c)}(w|y)$, and it is common to evaluate the probabilities to jump left/right/self-jump at time $t+w$.  In this case the space-time transition kernel governing the DTRW is
+\begin{align} \label{eq:DTRWSTJK}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
+  + n(x, t+w) \delta_0(z)
+  + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+Alternatively, one may assume that the bias to jump left/right/self-jump is evaluated at the \emph{beginning} of a waiting time, which leads to
+\begin{align} \label{eq:DTRWSTJK2}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
+  + n(x, t) \delta_0(z)
+  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
+
+To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
+\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
+
+
+
+References {#references .unnumbered}
+==========
