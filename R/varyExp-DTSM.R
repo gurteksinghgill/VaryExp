@@ -43,15 +43,15 @@ DTSM <- function (xrange, T, Psi, a, b, d) {
   chk2 <- sum(xi);
   
   #Plot density and age density at time = 0 and T
-  par(mfrow=c(2,2));
-  plot(seq(xrange[1],xrange[2],chi),rowSums(xi0),type="l", main = "Density at T = 0", xlab = "x", ylab = "P(x,0)");
-  grid();
-  plot(seq(0,age_max,tau),colSums(xi0),type="l", main = "Age Density at T = 0", xlab = "t", ylab = "P(V=t)");
-  grid();
-  plot(seq(xrange[1],xrange[2],chi),rowSums(xi)/chi,type="l", main = paste("Density at T = ", T), xlab = "x", ylab = paste("P(x,", T, ")"));
-  grid();
-  plot(seq(0,age_max,tau),colSums(xi),type="l", main = paste("Age Density at T = ", T), xlab = "t", ylab = "P(V=t)");
-  grid();
+  # par(mfrow=c(2,2));
+  # plot(seq(xrange[1],xrange[2],chi),rowSums(xi0),type="l", main = "Density at T = 0", xlab = "x", ylab = "P(x,0)");
+  # grid();
+  # plot(seq(0,age_max,tau),colSums(xi0),type="l", main = "Age Density at T = 0", xlab = "t", ylab = "P(V=t)");
+  # grid();
+  # plot(seq(xrange[1],xrange[2],chi),rowSums(xi)/chi,type="l", main = paste("Density at T = ", T), xlab = "x", ylab = paste("P(x,", T, ")"));
+  # grid();
+  # plot(seq(0,age_max,tau),colSums(xi),type="l", main = paste("Age Density at T = ", T), xlab = "t", ylab = "P(V=t)");
+  # grid();
   
   return(list(x = seq(xrange[1],xrange[2],chi), Px = rowSums(xi)/chi));
   
