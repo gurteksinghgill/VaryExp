@@ -580,17 +580,17 @@ where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourh
 
 #### Proof
 
-\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\overline \psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
 For \eqref{eq:psi-non-local}, we first note that
 \begin{align*}
-c \overline \psi^{(c)}(w|y)
+c \Psi^{(c)}(w|y)
 = c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
 \end{align*}
 If $g$ is differentiable, we may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
-= c \int_\varepsilon^\infty g'(w) \overline \psi^{(c)}(w|y)\,dw
+= c \int_\varepsilon^\infty g'(w) \Psi^{(c)}(w|y)\,dw
 \\
 \to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
