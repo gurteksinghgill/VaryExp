@@ -42,6 +42,10 @@ preamble: |
   \usepackage{amsthm,amsmath,amssymb,hyperref}
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
 \newtheorem{lemma}{Lemma}
 
 # Introduction
@@ -202,7 +206,7 @@ $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
 choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
-with continuously changing exponent $\beta(Y_u)$ [@Straka17].
+with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
 It will be convenient to introduce the tail function of the Levy measure
 $$
@@ -215,6 +219,13 @@ $$
 We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
 uniquely and concisely represents the Langevin process
 \eqref{eq:dY}--\eqref{eq:dZ}.
+We add the technical condition 
+\begin{align} \label{eq:levy-blowup}
+\overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
+\quad w \downarrow 0,
+\end{align}
+for some bounded function $G(y)$, 
+which prevents the Levy measure from blowing up, see Lemma \ref{lem:psi}
 
 Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
 $$
@@ -260,11 +271,11 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first
 define the following function:
 $$
-H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y) | y\right)\right], \quad w > 0,
+H^{(c)}(w | y) := 1 \wedge \left[c^{-1} \overline \nu\left(w - c^{-1} d(y) | y\right)\right], \quad w > 0,
 $$
 where $a \wedge b := \min\{a, b\}$.
 For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.
-It is clear that for fixed $y$ and $\tau$ this function is decreasing from $1$
+It is clear that for fixed $y$ and $c$ this function is decreasing from $1$
 to $0$ and is hence the tail function of some continuous probability measure.
 For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
 \begin{align}
@@ -340,6 +351,7 @@ c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &=
 c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
+
 We give calculations in the appendix which confirm that the above four
 conditions indeed hold for $K^{(c)}(z,w|x,t)$.
 
@@ -524,28 +536,31 @@ For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the di
 
 In @Korabel2010, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$.
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varyexp1}
-\caption{\label{fig:varyexp1}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta(x) = 0.25 + 0.5/(1+e^{-x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
+```{r varyexp1}
+source("../R/varyExp-DTSM.R")
+source("../R/varyExp-varyingexp1.R")
+```
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varyexp2}
-\caption{\label{fig:varyexp2}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
 
+
+
+```{r varyexp2}
+source("../R/varyExp-varyingexp2.R")
+```
+
+```{r varymixture}
+source("../R/varyExp-varyingmixture.R")
+```
 
 ### Spatially varying Tempering {-}
 
 The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
 
-\begin{figure}[h]
-\includegraphics[scale=0.6]{../img/varytempering}
-\caption{\label{fig:varytempering}
-Density $P(x,t)$ at multiple times of a variable order subdiffusive system with spatially varying tempering. We set $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ and $\theta (x) = 1/(1+e^{0.5x})$. The time scale $T_0 = 2$ and $c = 40$.}
-\end{figure}
+```{r varytempering}
+source("../R/varyExp-varyingtempering.R")
+```
+
+
 
 
 \appendix
@@ -554,11 +569,12 @@ Density $P(x,t)$ at multiple times of a variable order subdiffusive system with 
 
 ## Preliminary calculations
 
-We need to calculate two sums which will be useful for checking conditions
+We need to calculate the following sums which will be useful for checking conditions
 \eqref{eq:cond3} \& \eqref{eq:cond4}.
 
 \begin{lemma}
-The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
+Under condition \eqref{eq:levy-blowup}, 
+the waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
 \begin{align}
 \label{eq:psi2delta}
 \int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
@@ -573,20 +589,21 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 &\to d(y)
 %- \varepsilon \overline{\nu}(\varepsilon)
 %+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
-+ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
++ \mathcal O\left(\frac{\varepsilon^{1-\beta(y)}}{\Gamma(1-\beta(y))}\right), \quad \varepsilon > 0.
 \end{align}
 where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
 \end{lemma}
 
-#### Proof
 
-\eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
 For \eqref{eq:psi-non-local}, we first note that
-\begin{align*}
+$$
 c \Psi^{(c)}(w|y)
-= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
-\end{align*}
-If $g$ is differentiable, we may calculate
+= c \wedge [\overline \nu(w - c^{-1} d(y))] \to \overline \nu(w), 
+\quad c \to \infty.
+$$
+Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
+so that $g(\varepsilon) = 0$. We may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
@@ -594,37 +611,57 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 \\
 \to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
-= \int_0^\infty g(w) \nu(w|y)\,dw
+= \int_0^\infty g(w) \nu(w|y)\,dw.
 \end{align*}
 But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local},
-first note that
+For \eqref{eq:psi-local}, first define the cutoff value $C(y,c)$ as the 
+largest value $w$ for which $H^{(c)}(w|y) = 1$. 
+Writing $\overline \nu^{-1}(\,\cdot\, | y)$ for the inverse function of 
+$\overline \nu(\,\cdot\, | y)$, 
+we find
 \begin{align*}
 1 = H^{(c)}(w|y)
 \Longleftrightarrow
-w \le \overline \nu^{-1}(c|y) + d(y)\tau =: C(y,c).
+\overline \nu(w - c^{-1} d(y)|y) \ge c
+\Longleftrightarrow
+w \le \overline \nu^{-1}(c|y) + c^{-1} d(y) =: C(y,c).
 \end{align*}
-Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
+Hence if $j\tau \le C(y,c)$ then $\psi^{(c)}(j\tau|y) = 0$.
 We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
 $n_2 = \lfloor \varepsilon / \tau \rfloor$.
-Then by assumption \eqref{eq:ass4},
-\begin{align}
-\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
-\quad c \to \infty,
-\end{align}
-and hence
-\begin{align} \label{eq:to-dy}
-\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
-\end{align}
-Then the left side of \eqref{eq:psi-local} is
+Note that by definition of $\tau$, $n_1 \to \infty$ as $c \to \infty$. 
+Noting that 
+$n_1 \tau = C(y,c) + \mathcal O(\tau)$, 
+$n_2 \tau = \varepsilon + \mathcal O(\tau)$, 
+$(n_2 + 1) \tau = \varepsilon + \mathcal O(\tau)$, 
+the left side of \eqref{eq:psi-local} computes to
 \begin{align*}
 &c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
 = c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
 \\
-&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
-+ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
+&= c \sum_{j=n_1}^{n_2} j\tau H^{(c)}(j\tau | y)
+  -c \sum_{j=n_1+1}^{n_2+1} (j-1)\tau H^{(c)}(j\tau | y)
+\\
+&= n_1 \tau cH^{(c)}(n_1 \tau|y) 
++ \sum_{j = n_1 + 1}^{n_2} \tau cH^{(c)}(j\tau|y)
+- n_2 \tau cH^{(c)}\left( (n_2 + 1)\tau | y \right)
+\\
+&= [C(y,c) + \mathcal O(\tau)] c \times 1
++ \int_{C(y,c)}^\varepsilon \overline \nu(w - c^{-1} d(y) | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&= [C(y,c) + \mathcal O(\tau)] c
++ \int_0^{\varepsilon - C(y,c)} \overline \nu(w + \overline \nu^{-1}(c|y) | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&\le [C(y,c) + \mathcal O(\tau)] c
++ \int_0^{\varepsilon} \overline \nu(w | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&\to d(y) + \int_0^\varepsilon \overline \nu(w | y)\,dw 
++ \varepsilon \overline \nu(\varepsilon)
+= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right)
 \end{align*}
-where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
 In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
 $c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
 And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
