@@ -202,7 +202,7 @@ $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
 choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
-with continuously changing exponent $\beta(Y_u)$ [@Straka17].
+with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
 It will be convenient to introduce the tail function of the Levy measure
 $$
@@ -215,6 +215,13 @@ $$
 We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
 uniquely and concisely represents the Langevin process
 \eqref{eq:dY}--\eqref{eq:dZ}.
+We add the technical condition 
+\begin{align} \label{eq:levy-blowup}
+\overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
+\quad w \downarrow 0,
+\end{align}
+for some bounded function $G(y)$, 
+which prevents the Levy measure from blowing up, see Lemma \ref{lem:psi}
 
 Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
 $$
@@ -260,11 +267,11 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first
 define the following function:
 $$
-H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y) | y\right)\right], \quad w > 0,
+H^{(c)}(w | y) := 1 \wedge \left[c^{-1} \overline \nu\left(w - c^{-1} d(y) | y\right)\right], \quad w > 0,
 $$
 where $a \wedge b := \min\{a, b\}$.
 For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.
-It is clear that for fixed $y$ and $\tau$ this function is decreasing from $1$
+It is clear that for fixed $y$ and $c$ this function is decreasing from $1$
 to $0$ and is hence the tail function of some continuous probability measure.
 For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
 \begin{align}
@@ -340,6 +347,7 @@ c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &=
 c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
+
 We give calculations in the appendix which confirm that the above four
 conditions indeed hold for $K^{(c)}(z,w|x,t)$.
 
@@ -558,7 +566,8 @@ We need to calculate the following sums which will be useful for checking condit
 \eqref{eq:cond3} \& \eqref{eq:cond4}.
 
 \begin{lemma}
-The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
+Under condition \eqref{eq:levy-blowup}, 
+the waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
 \begin{align}
 \label{eq:psi2delta}
 \int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
@@ -573,7 +582,7 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 &\to d(y)
 %- \varepsilon \overline{\nu}(\varepsilon)
 %+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
-+ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
++ \mathcal O\left(\frac{\varepsilon^{1-\beta(y)}}{\Gamma(1-\beta(y))}\right), \quad \varepsilon > 0.
 \end{align}
 where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
 \end{lemma}
@@ -583,9 +592,11 @@ _Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability dis
 For \eqref{eq:psi-non-local}, we first note that
 $$
 c \Psi^{(c)}(w|y)
-= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
+= c \wedge [\overline \nu(w - c^{-1} d(y))] \to \overline \nu(w), 
+\quad c \to \infty.
 $$
-If $g$ is differentiable, we may calculate
+Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
+so that $g(\varepsilon) = 0$. We may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
@@ -593,37 +604,57 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 \\
 \to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
-= \int_0^\infty g(w) \nu(w|y)\,dw
+= \int_0^\infty g(w) \nu(w|y)\,dw.
 \end{align*}
 But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local},
-first note that
-$$
+For \eqref{eq:psi-local}, first define the cutoff value $C(y,c)$ as the 
+largest value $w$ for which $H^{(c)}(w|y) = 1$. 
+Writing $\overline \nu^{-1}(\,\cdot\, | y)$ for the inverse function of 
+$\overline \nu(\,\cdot\, | y)$, 
+we find
+\begin{align*}
 1 = H^{(c)}(w|y)
 \Longleftrightarrow
-w \le \overline \nu^{-1}(\tau^{-1}|y) + d(y)\tau =: C(y,c).
-$$
-Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
+\overline \nu(w - c^{-1} d(y)|y) \ge c
+\Longleftrightarrow
+w \le \overline \nu^{-1}(c|y) + c^{-1} d(y) =: C(y,c).
+\end{align*}
+Hence if $j\tau \le C(y,c)$ then $\psi^{(c)}(j\tau|y) = 0$.
 We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
 $n_2 = \lfloor \varepsilon / \tau \rfloor$.
-Then by assumption \eqref{eq:ass4},
-\begin{align}
-\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
-\quad c \to \infty,
-\end{align}
-and hence
-\begin{align} \label{eq:to-dy}
-\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
-\end{align}
-Then the left side of \eqref{eq:psi-local} is
+Note that by definition of $\tau$, $n_1 \to \infty$ as $c \to \infty$. 
+Noting that 
+$n_1 \tau = C(y,c) + \mathcal O(\tau)$, 
+$n_2 \tau = \varepsilon + \mathcal O(\tau)$, 
+$(n_2 + 1) \tau = \varepsilon + \mathcal O(\tau)$, 
+the left side of \eqref{eq:psi-local} computes to
 \begin{align*}
 &c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
 = c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
 \\
-&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
-+ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
+&= c \sum_{j=n_1}^{n_2} j\tau H^{(c)}(j\tau | y)
+  -c \sum_{j=n_1+1}^{n_2+1} (j-1)\tau H^{(c)}(j\tau | y)
+\\
+&= n_1 \tau cH^{(c)}(n_1 \tau|y) 
++ \sum_{j = n_1 + 1}^{n_2} \tau cH^{(c)}(j\tau|y)
+- n_2 \tau cH^{(c)}\left( (n_2 + 1)\tau | y \right)
+\\
+&= [C(y,c) + \mathcal O(\tau)] c \times 1
++ \int_{C(y,c)}^\varepsilon \overline \nu(w - c^{-1} d(y) | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&= [C(y,c) + \mathcal O(\tau)] c
++ \int_0^{\varepsilon - C(y,c)} \overline \nu(w + \overline \nu^{-1}(c|y) | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&\le [C(y,c) + \mathcal O(\tau)] c
++ \int_0^{\varepsilon} \overline \nu(w | y)\,dw + \mathcal O(c\tau)
+- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
+\\
+&\to d(y) + \int_0^\varepsilon \overline \nu(w | y)\,dw 
++ \varepsilon \overline \nu(\varepsilon)
+= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right)
 \end{align*}
-where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
 In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
 $c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
 And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
