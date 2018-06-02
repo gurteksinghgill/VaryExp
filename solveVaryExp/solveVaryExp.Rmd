@@ -566,15 +566,13 @@ source("../R/varyExp-varyingtempering.R")
 
 \appendix
 
-# Appendix
+# Checking conditions \eqref{eq:cond1} -- \eqref{eq:cond4}
 
-## Preliminary calculations
-
-We need to calculate the following sums which will be useful for checking conditions
-\eqref{eq:cond3} \& \eqref{eq:cond4}.
+The following lemma pertains to the calculations in the waiting times 
+of \eqref{eq:cond1} -- \eqref{eq:cond4}:
 
 \begin{lemma} \label{lem:psi}
-Under condition \eqref{eq:levy-blowup}, 
+Under condition \eqref{eq:blowup}, 
 the waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
 \begin{align}
 \label{eq:psi2delta}
@@ -664,9 +662,14 @@ the left side of \eqref{eq:psi-local} computes to
 where $\mathcal O(c\tau)$ is the error in the approximation of the Riemann 
 sum by the Riemann integral, 
 and the final error term in $\varepsilon$ is due to \eqref{eq:blowup}. 
+\qed
 
+The following lemma pertains to the jump distributions
+in \eqref{eq:cond1}--\eqref{eq:cond4}: 
 
-For later use, we note that
+\begin{lemma}\label{lem:jumps}
+The jump probabilities $\ell^{(c)}(x,t), r^{(c)}(x,t)$ and 
+$n(x,t)$ satisfy
 \begin{align}
 \label{eq:jump-calc-b}
 c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
@@ -679,7 +682,7 @@ c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
 &\to f(0)
 \end{align}
 as $c \to \infty$ for all bounded continuous $f$.
-
+\end{lemma}
 
 \subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
 
