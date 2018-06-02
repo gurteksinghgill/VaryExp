@@ -356,6 +356,23 @@ for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood o
 We give calculations in the appendix which confirm that the above four
 conditions indeed hold for $K^{(c)}(z,w|x,t)$.
 
+### Remark {-}
+
+The alternative kernel 
+\begin{align} \label{eq:Kalt}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
+  + n(x, t) \delta_0(z)
+  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+also satisfies \eqref{eq:cond1} -- \eqref{eq:cond4}. 
+The difference to \eqref{eq:K} is that the probabilities 
+$r^{(c)}(x,t), \ell^{(c)}(x,t)$ and $n(x,t)$ are evaluated at the 
+_beginning_ of a waiting time, rather than the end. 
+As investigated by @Angstmann2015, this difference vanishes in the limit 
+as $c \to \infty$. 
+
+
 # Semi-Markov numeric scheme
 
 As described at the beginning of Section 3,
@@ -500,7 +517,7 @@ Due to the convergence \eqref{eq:CTRW-J1}, we have
 \end{align}
 for all bounded continuous real-valued $f$ defined on $\mathbb R$.
 Assuming that the distribution of $X_t$ has a probability density,
-we may take $f$ to be an indicator function of an interval $(a,b)$,
+we may replace $f$ by an indicator function of an interval $(a,b)$,
 and \eqref{eq:consistency} reads
 \begin{align}
   \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
@@ -684,28 +701,11 @@ c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
 as $c \to \infty$ for all bounded continuous $f$.
 \end{lemma}
 
-\subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
-
-Assume now that a jump happens at time $t$ and the location of the walker immediately after the jump is $(x,t)$.
-Then the next jump will happen at time $t+w$, where $w$ is drawn from $\psi^{(c)}(w|y)$, and it is common to evaluate the probabilities to jump left/right/self-jump at time $t+w$.  In this case the space-time transition kernel governing the DTRW is
-\begin{align} \label{eq:DTRWSTJK}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
-  + n(x, t+w) \delta_0(z)
-  + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-Alternatively, one may assume that the bias to jump left/right/self-jump is evaluated at the \emph{beginning} of a waiting time, which leads to
-\begin{align} \label{eq:DTRWSTJK2}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
-  + n(x, t) \delta_0(z)
-  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
-
-To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
-\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
-
+Finally, to see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
+\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. 
+To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let 
+$\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use 
+\eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
 
 
 References {#references .unnumbered}
