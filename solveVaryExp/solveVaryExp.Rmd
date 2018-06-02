@@ -220,12 +220,13 @@ We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)
 uniquely and concisely represents the Langevin process
 \eqref{eq:dY}--\eqref{eq:dZ}.
 We add the technical condition 
-\begin{align} \label{eq:levy-blowup}
+\begin{align} \label{eq:blowup}
 \overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
 \quad w \downarrow 0,
 \end{align}
 for some bounded function $G(y)$, 
-which prevents the Levy measure from blowing up, see Lemma \ref{lem:psi}
+which prevents the Levy measure from blowing up as $\beta(y) \uparrow 1$, 
+see Lemma \ref{lem:psi}.
 
 Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
 $$
@@ -572,7 +573,7 @@ source("../R/varyExp-varyingtempering.R")
 We need to calculate the following sums which will be useful for checking conditions
 \eqref{eq:cond3} \& \eqref{eq:cond4}.
 
-\begin{lemma}
+\begin{lemma} \label{lem:psi}
 Under condition \eqref{eq:levy-blowup}, 
 the waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
 \begin{align}
@@ -634,6 +635,8 @@ Noting that
 $n_1 \tau = C(y,c) + \mathcal O(\tau)$, 
 $n_2 \tau = \varepsilon + \mathcal O(\tau)$, 
 $(n_2 + 1) \tau = \varepsilon + \mathcal O(\tau)$, 
+\eqref{eq:blowup} implies 
+$c \overline \nu^{-1}(c|y) \to 0$, 
 the left side of \eqref{eq:psi-local} computes to
 \begin{align*}
 &c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
@@ -654,22 +657,14 @@ the left side of \eqref{eq:psi-local} computes to
 + \int_0^{\varepsilon - C(y,c)} \overline \nu(w + \overline \nu^{-1}(c|y) | y)\,dw + \mathcal O(c\tau)
 - (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
 \\
-&\le [C(y,c) + \mathcal O(\tau)] c
-+ \int_0^{\varepsilon} \overline \nu(w | y)\,dw + \mathcal O(c\tau)
-- (\varepsilon + \mathcal O(\tau)) \overline \nu(\varepsilon + \mathcal O(\tau))
-\\
 &\to d(y) + \int_0^\varepsilon \overline \nu(w | y)\,dw 
 + \varepsilon \overline \nu(\varepsilon)
-= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right)
+= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right),
 \end{align*}
-In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
-$c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
-And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
-\begin{align*}
-d(y) - \varepsilon \overline \nu(\varepsilon | y)
-+ \int_0^\varepsilon \overline \nu(w)\,dw,
-\end{align*}
-which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
+where $\mathcal O(c\tau)$ is the error in the approximation of the Riemann 
+sum by the Riemann integral, 
+and the final error term in $\varepsilon$ is due to \eqref{eq:blowup}. 
+
 
 For later use, we note that
 \begin{align}
