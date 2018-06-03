@@ -1,13 +1,28 @@
 #Parameters
-xrange <- c(-2,2);                                      
-alpha <- function(x) {r <- 0.5/(1+exp(-x)) + 0.25; return(r)};   
-Psi <- function(x,t) {r <- (t^(-alpha(x))  )/gamma(1-alpha(x)); r[r>1] <- 1; return(r)};           
-a <- function(x,s) {r <- (1)^(-alpha(x)); return(r)};          
-b <- function(x,s) {r <- 0; return(r)};                         
-d <- function(x,s) {r <- 0; return(r)};                         
+alpha <- function(x)
+  0.5 / (1 + exp(-x)) + 0.25
+Psi <- function(x,t) {
+  r <- (t^(-alpha(x))  )/gamma(1-alpha(x)) 
+  r[r>1] <- 1
+  r
+}
+a <- function(x, s)
+  (1) ^ (-alpha(x))
+b <- function(x,s)
+  0
+d <- function(x,s) 
+  0
+
+#Set up grid size and spacing parameters
+c <- 100;
+chi <- 1 / sqrt(c)
+xrange <- c(-2,2)
+tau <- (10/c)
+age_max <- round(100/tau + 1)*tau
+
 
 #Evaluate densities at multiple times 
-p1 <- DTSM(xrange, T = 1000, Psi, a, b, d);
+p1 <- DTSM(xrange, T = 100, Psi, a, b, d);
 # p2 <- DTSM(xrange, T = 2000, Psi, a, b, d);
 # p5 <- DTSM(xrange, T = 5000, Psi, a, b, d);
 # p10 <- DTSM(xrange, T = 10000, Psi, a, b, d);
