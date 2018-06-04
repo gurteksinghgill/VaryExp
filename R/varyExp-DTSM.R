@@ -34,11 +34,11 @@ init_DTRM <- function(xrange,
                       Psi = default_Psi,
                       d = default_d) {
   # set up space-age-lattice
-  m <- round((xrange[2] - xrange[1]) / chi + 1)
+  m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
   # Put initial mass on center lattice point with age 0:
-  midpoint_index <- round(m/2 + 1)
+  midpoint_index <- (m + 1)/2
   xi0[midpoint_index, 1] <- 1 / chi
   
   # set up survival probability matrix
@@ -47,10 +47,10 @@ init_DTRM <- function(xrange,
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
-  age <- (1:n) * tau
+  age <- (1:(n+1)) * tau
   h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
-  survival_probs <- h[ , -1] / h[ , -(n+1)]
+  survival_probs <- h[ , -1] / h[ , -n]
 
   list(xi0 = xi0, survival_probs = survival_probs)
 }
@@ -86,7 +86,7 @@ jump_probs <- function(x, t, a = default_a, b = default_b) {
 step_xi <- function(xi, Sprob, Jprob) {
   #Evaluate survivals, escapes and jumps
   surviving <- xi * Sprob
-  escaping <- rowSums(xi * (1 - Sprob))
+  escaping <- rowSums(xi - surviving)
   self_jumping  <- escaping * Jprob$center
   right_jumping <- escaping * Jprob$right
   left_jumping  <- escaping * Jprob$left
@@ -94,22 +94,20 @@ step_xi <- function(xi, Sprob, Jprob) {
   #Update grid with survivals, escapes and jumps
   m <- dim(xi)[1]
   n <- dim(xi)[2]
-  # save density of particles with maximum age
-  oldest <- xi[, n]
   # increment age of surviving particles
   xi[ , -1] <- surviving[ , -n]
   # don't increment age of oldest particles
-  xi[ , n] <- xi[ , n] + oldest
+  xi[ , n] <- xi[ , n] + surviving[, n]
   # place escaping particles back on grid
   xi[ , 1] <- self_jumping + c(0, right_jumping[-m]) + c(left_jumping[-1], 0)
   xi
 }
 
 
-# Computes space-age densities for various snapshots in time.
+# Computes location-age densities for various snapshots in time.
 # Arguments: 
 #   xrange: 2-vector delineating the domain
-#   snapshots: a vector of times at which space-age densities xi are computed
+#   snapshots: a vector of times at which location-age densities xi are computed
 #   age_max: maximum age
 #   c: master scalint parameter
 #   chi: spatial grid parameter
