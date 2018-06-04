@@ -216,19 +216,7 @@ and its Laplace transform
 $$
 \hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
 $$
-We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
-uniquely and concisely represents the Langevin process
-\eqref{eq:dY}--\eqref{eq:dZ}.
-We add the technical condition 
-\begin{align} \label{eq:blowup}
-\overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
-\quad w \downarrow 0,
-\end{align}
-for some bounded function $G(y)$, 
-which prevents the Levy measure from blowing up as $\beta(y) \uparrow 1$, 
-see Lemma \ref{lem:psi}.
-
-Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
+We can then define the _renewal function_ $V(y,s)$ via its Laplace transform
 $$
 \hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
 = \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
@@ -243,6 +231,26 @@ of the subordinated process
 X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
 \end{align}
 $X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW.
+
+We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+concisely represents the Langevin process
+\eqref{eq:dY}--\eqref{eq:dZ}.
+However, the representation is only unique up to a multiplicative factor: 
+if every element in the 4-tuple is, say, doubled, 
+then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
+the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
+hence does not affect the distribution of the trajectories $X(t)$. 
+Hence if we assume that $d(y)$ is bounded, then we can also assume 
+WLOG that $0 \le d(y) \le 1$. 
+
+Finally, we add the technical but non-restrictive condition 
+\begin{align} \label{eq:blowup}
+\overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
+\quad w \downarrow 0,
+\end{align}
+for some bounded function $G(y)$, 
+which prevents the Levy measure from blowing up in regions where 
+$\beta(y) \uparrow 1$, see Lemma \ref{lem:psi}.
 
 
 # Discrete Langevin Dynamics
@@ -269,32 +277,37 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 
 ## Waiting time distribution
 
-Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first
-define the following function:
+First, define a random waiting time $\tilde W^{(c)}_y$ with the following tail function:
 $$
-H^{(c)}(w | y) := 1 \wedge \left[c^{-1} \overline \nu\left(w - c^{-1} d(y) | y\right)\right], \quad w > 0,
+\mathbf P(\tilde W^{(c)}_y > w) 
+= 1 \wedge \frac{\overline \nu(w | y)}{c (1-d(y))}, \quad w > 0,
 $$
 where $a \wedge b := \min\{a, b\}$.
-For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.
-It is clear that for fixed $y$ and $c$ this function is decreasing from $1$
-to $0$ and is hence the tail function of some continuous probability measure.
-For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
+Then let $W^{(c)}_y$ be a random waiting time which has the value 
+$\tau$ with probability $d(y)$ and $\tilde W^{(c)}_y$ with probability $1-d(y)$. 
+Finally, discretize $W^{(c)}_y$ by rounding up to the nearest multiple of 
+$\tau$. This results in a random discrete waiting time with the tail 
+function 
 \begin{align}
-w_\tau = j\tau \ge w > (j-1)\tau,
+\Psi^{(c)}(w|y) 
+= d(y) \mathbf 1\{w \le \tau\} 
++ (1-d(y)) \wedge \frac{\overline \nu(w_\tau | y)}{c},
+\end{align}
+where $w_\tau$ be the smallest lattice point which is not smaller than $w$; 
+i.e.
+\begin{align}
+w_\tau = j\tau \ge w > (j-1)\tau.
 \label{eq:w-tau}
 \end{align}
-and thus define the piecewise constant, right-continuous and non-increasing
-function
-$$
-\Psi^{(c)}(w|y) := H^{(c)}(w_\tau|y), \quad w \ge 0.
-$$
-For fixed $y$ and $c$, see that $\Psi^{(c)}(w|y)$ is the tail function of a
-discrete probability measure, with probability function
+It is clear that for fixed $y$ and $c$,
+$t \mapsto \Psi^{(c)}(t|y)$ is a step function decreasing from $1$
+to $0$ and is hence indeed the tail function of some discrete probability
+measure $\psi^{(c)}(j\tau|y)$ given by
 \begin{align} \label{eq:def-psi}
-  \psi^{(c)}(j\tau | y) = H^{(c)}((j-1)\tau | y) - H^{(c)}(j\tau | y),
-  \quad j = 0, 1, 2, \ldots
+  \psi^{(c)}(j\tau | y) = \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y),
+  \quad j = 1, 2, \ldots
 \end{align}
-Note that $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
+Note that $\psi^{(c)}(0\tau | y) = 1-1= 0$, meaning that waiting times are always
 strictly positive.
 
 
@@ -352,7 +365,6 @@ c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &=
 c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
-
 We give calculations in the appendix which confirm that the above four
 conditions indeed hold for $K^{(c)}(z,w|x,t)$.
 
@@ -607,7 +619,8 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 %+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
 + \mathcal O\left(\frac{\varepsilon^{1-\beta(y)}}{\Gamma(1-\beta(y))}\right), \quad \varepsilon > 0.
 \end{align}
-where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
+for any bounded continuous $f$ and $g$, where $g$ vanishes in a 
+neighbourhood of $0$.
 \end{lemma}
 
 
@@ -615,11 +628,14 @@ _Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability dis
 For \eqref{eq:psi-non-local}, we first note that
 $$
 c \Psi^{(c)}(w|y)
-= c \wedge [\overline \nu(w - c^{-1} d(y))] \to \overline \nu(w), 
-\quad c \to \infty.
+= c d(y) \mathbf 1(w \le \tau) 
++ [c(1-d(y))] \wedge \overline \nu(w_\tau) \to \overline \nu(w), 
+\quad c \to \infty,
 $$
+for every $w > 0$ (recall that $tau \downarrow 0$). 
 Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
-so that $g(\varepsilon) = 0$. We may calculate
+so that $g(\varepsilon) = 0$. 
+Using (Lebesgue-Stieltjes) integration by parts, we may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
@@ -629,7 +645,8 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
 = \int_0^\infty g(w) \nu(w|y)\,dw.
 \end{align*}
-But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
+But bounded continuous functions can be approximated by differentiable 
+functions with arbitrary accuracy, so \eqref{eq:psi-non-local} follows.
 For \eqref{eq:psi-local}, first define the cutoff value $C(y,c)$ as the 
 largest value $w$ for which $H^{(c)}(w|y) = 1$. 
 Writing $\overline \nu^{-1}(\,\cdot\, | y)$ for the inverse function of 
