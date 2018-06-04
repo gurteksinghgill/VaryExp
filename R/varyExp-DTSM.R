@@ -35,7 +35,7 @@ init_DTRM <- function(xrange,
                       d = default_d) {
   # set up space-age-lattice
   m <- round((xrange[2] - xrange[1]) / chi + 1)
-  n <- round(age_max / tau + 1)
+  n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
   # Put initial mass on center lattice point with age 0:
   midpoint_index <- round(m/2 + 1)
@@ -47,9 +47,7 @@ init_DTRM <- function(xrange,
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
-  age <- seq(from = 0,
-             to = age_max + tau,
-             length.out = n+1)
+  age <- (1:n) * tau
   h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
