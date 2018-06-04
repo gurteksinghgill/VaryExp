@@ -1,7 +1,11 @@
-default_Psi <- function(x,t) {
-  r <- t^(-0.7)/gamma(1-0.7) 
-  r[r>1] <- 1
-  r
+library(ggplot2)
+library(tidyverse)
+
+default_Psi <- function(x, t) {
+  if (t <= 0)
+    Inf
+  else
+    t ^ (-0.7) / gamma(1 - 0.7)
 }
 default_a <- function(x,t) 
   1
@@ -22,8 +26,8 @@ default_d <- function(x,t)
 #   * an (m,n) matrix of the CTRW states, with the first dimension
 #     corresponding to space and the second to age
 #   * an (m,n) matrix of survival probabilities
-init_DTRM <- function(xrange = c(-1, 1),
-                      age_max = 10,
+init_DTRM <- function(xrange,
+                      age_max,
                       c = 10,
                       chi = 0.1,
                       tau = 0.1,
@@ -46,7 +50,7 @@ init_DTRM <- function(xrange = c(-1, 1),
   age <- seq(from = 0,
              to = age_max + tau,
              length.out = n+1)
-  h <- outer(x, age, Psi_with_d) / c # see paper for definition of h
+  h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
 
@@ -119,12 +123,12 @@ step_xi <- function(xi, Sprob, Jprob) {
 # Returns:
 #   a list of the same length as snapthots, with containing the space-age
 #   distributions xi   
-DTSM <- function(xrange = c(-1, 1),
-                 snapshots = c(0.1, 0.5, 1),
+DTSM <- function(xrange = c(-2, 2),
+                 snapshots = c(0.5, 1, 2),
                  age_max = max(snapshots),
-                 c = 10,
-                 chi = 0.1,
-                 tau = 0.1,
+                 c = 1000,
+                 chi = 1/sqrt(c),
+                 tau = 1/c,
                  a = default_a,
                  b = default_b,
                  Psi = default_Psi,
@@ -149,9 +153,14 @@ DTSM <- function(xrange = c(-1, 1),
   N <- length(snapshots)
   xi_list <- vector("list", N)
   t <- 0
+  counter <- 0
+  message("Need ", round(max(snapshots) / tau), " iterations.")
   for (i in 1:N) {
     while (t + tau <= snapshots[i]) {
       t <- t + tau
+      counter <- counter + 1
+      if (counter %% 1000 == 0)
+        message("Finished ", counter, " iterations.")
       Jprob <- jump_probs(x = x, t = t)
       xi <- step_xi(xi = xi,
                     Sprob = Sprob,
