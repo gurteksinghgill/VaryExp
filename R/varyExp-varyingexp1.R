@@ -9,5 +9,5 @@ Psi <- function(x,t) {
     (t^(-alpha(x))  )/gamma(1-alpha(x)) 
 }
 
-out1 <- DTSM(Psi = Psi, xrange = c(-4,4), snapshots = c(1,2,4))
-plot_DTSM_output(out1)
+out <- DTSM(Psi = Psi, xrange = c(-1,1), snapshots = 2^(1:5), c = 100)
+plot_DTSM_output(out)
