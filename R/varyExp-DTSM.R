@@ -1,60 +1,192 @@
-#The DTSM function implements a discrete time semi-Markov algorthim for calculating CTRW limit distributions
-#Inputs are range of x (e.g. [0,1]), time T, Tail function Psi and coefficient functions a, b and d
-#Outputs are 4 plots of density and age density (at times 0 and T) and a list containing the (x,y) values of the plot of the density at time = T
+library(ggplot2)
+library(tidyverse)
 
-DTSM <- function (xrange, T, Psi, a, b, d) {
+default_Psi <- function(x, t) {
+  if (t <= 0)
+    Inf
+  else
+    t ^ (-0.7) / gamma(1 - 0.7)
+}
+default_a <- function(x,t) 
+  1
+default_b <- function(x,t)
+  0
+default_d <- function(x,t) 
+  0
 
-  #Set up grid size and spacing parameters
-  c <- 100;
-  chi <- (3.125/c);                                               
-  tau <- (10/c);                                                 
-  age_max <- round(100/tau + 1)*tau;                             
-  xrange <- round(xrange/chi)*chi;
+# arguments: 
+#   xrange: a pair of numbers (xmin, xmax)
+#   age_max: cutoff of age lattice
+#   c: master scaling parameter
+#   chi: spatial lattice spacing
+#   tau: age lattice spacing
+#   Psi: space-dependent tail function of Levy measure
+#   d: space-dependent temporal drift
+# returns: a list of two items: 
+#   * an (m,n) matrix of the CTRW states, with the first dimension
+#     corresponding to space and the second to age
+#   * an (m,n) matrix of survival probabilities
+init_DTRM <- function(xrange,
+                      age_max,
+                      c = 10,
+                      chi = 0.1,
+                      tau = 0.1,
+                      Psi = default_Psi,
+                      d = default_d) {
+  # set up space-age-lattice
+  m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
+  n <- round(age_max / tau)
+  xi0 <- matrix(0, m, n)
+  # Put initial mass on center lattice point with age 0:
+  midpoint_index <- (m + 1)/2
+  xi0[midpoint_index, 1] <- 1 / chi
+  
+  # set up survival probability matrix
+  Psi_with_d <- function(x, t)
+    Psi(x - d(x) / c, t)
+  x <- seq(from = xrange[1],
+           to = xrange[2],
+           length.out = m)
+  age <- (1:(n+1)) * tau
+  h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
+  h[h > 1] <- 1
+  survival_probs <- h[ , -1] / h[ , -n]
 
-  #Set up grid and initial condition
-  xi0 <- matrix(0,round((xrange[2]-xrange[1])/chi + 1), round(age_max/tau + 1)); 
-  xi0[round(0.5*(xrange[2]-xrange[1])/chi + 1), 1] <- 1;      
-  xi <- xi0;                                                  
+  list(xi0 = xi0, survival_probs = survival_probs)
+}
+
+# calculates jump probabilities
+# arguments: 
+#   b, a: space- and time-dependent drift and diffusivity
+#   x: a vector of locations
+#   t: the current time (float)
+# returns: 
+#   a list with three items, each a vector of same length as x, 
+#   for the probabilities to jump left, right and self-jumps
+jump_probs <- function(x, t, a = default_a, b = default_b) {
+  m <- length(x)
+  chi <- diff(range(x)) / m
+  a_vec <- sapply(x, function(x) a(x,t))
+  b_vec <- sapply(x, function(x) b(x,t))
+  left  <- (a_vec - chi * b_vec) / 2
+  right <- (a_vec + chi * b_vec) / 2
+  center <- 1 - a_vec
+  # boundary conditions left end
+  center[1] <- center[1] + left[1]
+  left[1] <- 0
+  #boundary conditions right end
+  center[m] <- center[m] + right[m]
+  right[m] <- 0
+  list(left = left,
+       center = center,
+       right = right)
+}
+
+# evolve xi by one step
+step_xi <- function(xi, Sprob, Jprob) {
+  #Evaluate survivals, escapes and jumps
+  surviving <- xi * Sprob
+  escaping <- rowSums(xi - surviving)
+  self_jumping  <- escaping * Jprob$center
+  right_jumping <- escaping * Jprob$right
+  left_jumping  <- escaping * Jprob$left
   
-  #Evaluate Tail function and one-step survival probabilities at every grid point
-  TailF <- outer(seq(xrange[1],xrange[2],chi),seq(0,age_max,tau) - tau*d(0,0),Psi)/c;
-  TailF[TailF > 1] <- 1;
-  Sprob <- cbind(1, TailF[, seq(2,ncol(TailF),1)]/TailF[, seq(1,ncol(TailF)-1,1)] ); 
-  
-  #Iterate master equation on grid
-  k <- round(T/tau);
-  chk1 <- sum(xi0);                                          
-  for (i in 1:k) {
-    #Evaluate jump probabilities at every spatial grid point + Set boundary condition 
-    Jprob <- rbind(c(0.5, 1 - a(seq(xrange[1]+chi,xrange[2]-chi,chi),i*tau), 0.5),
-                   c(0.5, (a(seq(xrange[1]+chi,xrange[2]-chi,chi),i*tau) + chi*b(seq(xrange[1]+chi,xrange[2]-chi,chi),i*tau))/2, 0), 
-                   c(0, (a(seq(xrange[1]+chi,xrange[2]-chi,chi),i*tau) - chi*b(seq(xrange[1]+chi,xrange[2]-chi,chi),i*tau))/2, 0.5) );
-    
-    #Evaluate survivals, escapes and jumps
-    S <- xi*Sprob;                                             
-    E <- rowSums(xi*(1-Sprob));                                
-    C_J <- E*Jprob[1,];                                        
-    R_J <- E*Jprob[2,];                                        
-    L_J <- E*Jprob[3,];
-    
-    #Update grid with survivals, escapes and jumps
-    xi <- cbind( c( C_J[1]+L_J[2], R_J[seq(1,length(R_J)-2,1)]+C_J[seq(2,length(C_J)-1,1)]+L_J[seq(3,length(L_J),1)], R_J[length(R_J)-1]+C_J[length(C_J)] ), S[, seq(1,ncol(S)-2,1)], S[, ncol(S)-1]+S[, ncol(S)] );
-  }
-  chk2 <- sum(xi);
-  
-  #Plot density and age density at time = 0 and T
-  # par(mfrow=c(2,2));
-  # plot(seq(xrange[1],xrange[2],chi),rowSums(xi0),type="l", main = "Density at T = 0", xlab = "x", ylab = "P(x,0)");
-  # grid();
-  # plot(seq(0,age_max,tau),colSums(xi0),type="l", main = "Age Density at T = 0", xlab = "t", ylab = "P(V=t)");
-  # grid();
-  # plot(seq(xrange[1],xrange[2],chi),rowSums(xi)/chi,type="l", main = paste("Density at T = ", T), xlab = "x", ylab = paste("P(x,", T, ")"));
-  # grid();
-  # plot(seq(0,age_max,tau),colSums(xi),type="l", main = paste("Age Density at T = ", T), xlab = "t", ylab = "P(V=t)");
-  # grid();
-  
-  return(list(x = seq(xrange[1],xrange[2],chi), Px = rowSums(xi)/chi));
-  
+  #Update grid with survivals, escapes and jumps
+  m <- dim(xi)[1]
+  n <- dim(xi)[2]
+  # increment age of surviving particles
+  xi[ , -1] <- surviving[ , -n]
+  # don't increment age of oldest particles
+  xi[ , n] <- xi[ , n] + surviving[, n]
+  # place escaping particles back on grid
+  xi[ , 1] <- self_jumping + c(0, right_jumping[-m]) + c(left_jumping[-1], 0)
+  xi
 }
 
 
+# Computes location-age densities for various snapshots in time.
+# Arguments: 
+#   xrange: 2-vector delineating the domain
+#   snapshots: a vector of times at which location-age densities xi are computed
+#   age_max: maximum age
+#   c: master scalint parameter
+#   chi: spatial grid parameter
+#   tau: temporal grid parameter
+#   a: diffusivity
+#   b: drift
+#   Psi: tail function of Levy measure, truncated from above at 1
+#   d: temporal drift
+# Returns:
+#   a list of the same length as snapthots, with containing the space-age
+#   distributions xi   
+DTSM <- function(xrange = c(-2, 2),
+                 snapshots = c(0.5, 1, 2),
+                 age_max = max(snapshots),
+                 c = 1000,
+                 chi = 1/sqrt(c),
+                 tau = 1/c,
+                 a = default_a,
+                 b = default_b,
+                 Psi = default_Psi,
+                 d = default_d) {
+  foo <-
+    init_DTRM(
+      xrange = xrange,
+      age_max = age_max,
+      c = c,
+      chi = chi,
+      tau = tau,
+      Psi = Psi,
+      d = d
+    )
+  xi   <- foo$xi0
+  Sprob <- foo$survival_probs
+  m <- dim(xi)[1]
+  n <- dim(xi)[2]
+  x <- seq(from = xrange[1],
+           to = xrange[2],
+           length.out = m)
+  N <- length(snapshots)
+  xi_list <- vector("list", N)
+  t <- 0
+  counter <- 0
+  message("Need ", round(max(snapshots) / tau), " iterations.")
+  for (i in 1:N) {
+    while (t + tau <= snapshots[i]) {
+      t <- t + tau
+      counter <- counter + 1
+      if (counter %% 1000 == 0)
+        message("Finished ", counter, " iterations.")
+      Jprob <- jump_probs(x = x, t = t)
+      xi <- step_xi(xi = xi,
+                    Sprob = Sprob,
+                    Jprob = Jprob)
+    }
+    xi_list[[i]] <- xi
+  }
+  list(xi_list = xi_list, xrange = xrange, snapshots = snapshots)
+}
+
+
+plot_DTSM_output <- function(DTSM_output) {
+  library(tibble)
+  space_age_dataframe <- function(xi_list, xrange, snapshots) {
+    N <- length(xi_list)
+    xi <- xi_list[[1]]
+    m <- dim(xi)[1]
+    x <- seq(xrange[1], xrange[2], length.out = m)
+    out <- tibble(x = x)
+    for (i in 1:N) {
+      rho <- rowSums(xi_list[[i]])
+      out[paste0("t=", snapshots[i])] <- rho
+    }
+    out
+  }
+  xi_list <- DTSM_output[["xi_list"]]
+  xrange <- DTSM_output[["xrange"]]
+  snapshots <- DTSM_output[["snapshots"]]
+  space_age_dataframe(xi_list, xrange, snapshots) %>%
+    gather(snapshot, density,-x) %>%
+    ggplot(aes(x = x, y = density, col = snapshot)) +
+    geom_line()
+}

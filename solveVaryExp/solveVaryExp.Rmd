@@ -206,7 +206,7 @@ $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
 choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
-with continuously changing exponent $\beta(Y_u)$ [@Straka17].
+with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
 It will be convenient to introduce the tail function of the Levy measure
 $$
@@ -216,11 +216,7 @@ and its Laplace transform
 $$
 \hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
 $$
-We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
-uniquely and concisely represents the Langevin process
-\eqref{eq:dY}--\eqref{eq:dZ}.
-
-Finally, we define the _renewal function_ $V(y,s)$ via its Laplace transform
+We can then define the _renewal function_ $V(y,s)$ via its Laplace transform
 $$
 \hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
 = \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
@@ -235,6 +231,26 @@ of the subordinated process
 X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
 \end{align}
 $X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW.
+
+We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+concisely represents the Langevin process
+\eqref{eq:dY}--\eqref{eq:dZ}.
+However, the representation is only unique up to a multiplicative factor: 
+if every element in the 4-tuple is, say, doubled, 
+then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
+the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
+hence does not affect the distribution of the trajectories $X(t)$. 
+Hence if we assume that $d(y)$ is bounded, then we can also assume 
+WLOG that $0 \le d(y) \le 1$. 
+
+Finally, we add the technical but non-restrictive condition 
+\begin{align} \label{eq:blowup}
+\overline \nu(w|y) \le G(y) \, \frac{w^{-\beta(y)}}{\Gamma(1-\beta(y))}, 
+\quad w \downarrow 0,
+\end{align}
+for some bounded function $G(y)$, 
+which prevents the Levy measure from blowing up in regions where 
+$\beta(y) \uparrow 1$, see Lemma \ref{lem:psi}.
 
 
 # Discrete Langevin Dynamics
@@ -261,32 +277,37 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 
 ## Waiting time distribution
 
-Based on the tail function of the Levy measure $\overline \nu(w | y)$, we first
-define the following function:
+First, define a random waiting time $\tilde W^{(c)}_y$ with the following tail function:
 $$
-H^{(c)}(w | y) := 1 \wedge \left[\tau \overline \nu\left(w - \tau d(y) | y\right)\right], \quad w > 0,
+\mathbf P(\tilde W^{(c)}_y > w) 
+= 1 \wedge \frac{\overline \nu(w | y)}{c (1-d(y))}, \quad w > 0,
 $$
 where $a \wedge b := \min\{a, b\}$.
-For convenience, we use the convention that $\overline \nu(w|y) = \infty$ for $w \le 0$.
-It is clear that for fixed $y$ and $\tau$ this function is decreasing from $1$
-to $0$ and is hence the tail function of some continuous probability measure.
-For $w>0$, let $w_\tau$ be the nearest lattice point which is not smaller; i.e.
+Then let $W^{(c)}_y$ be a random waiting time which has the value 
+$\tau$ with probability $d(y)$ and $\tilde W^{(c)}_y$ with probability $1-d(y)$. 
+Finally, discretize $W^{(c)}_y$ by rounding up to the nearest multiple of 
+$\tau$. This results in a random discrete waiting time with the tail 
+function 
 \begin{align}
-w_\tau = j\tau \ge w > (j-1)\tau,
+\Psi^{(c)}(w|y) 
+= d(y) \mathbf 1\{w \le \tau\} 
++ (1-d(y)) \wedge \frac{\overline \nu(w_\tau | y)}{c},
+\end{align}
+where $w_\tau$ be the smallest lattice point which is not smaller than $w$; 
+i.e.
+\begin{align}
+w_\tau = j\tau \ge w > (j-1)\tau.
 \label{eq:w-tau}
 \end{align}
-and thus define the piecewise constant, right-continuous and non-increasing
-function
-$$
-\Psi^{(c)}(w|y) := H^{(c)}(w_\tau|y), \quad w \ge 0.
-$$
-For fixed $y$ and $c$, see that $\Psi^{(c)}(w|y)$ is the tail function of a
-discrete probability measure, with probability function
+It is clear that for fixed $y$ and $c$,
+$t \mapsto \Psi^{(c)}(t|y)$ is a step function decreasing from $1$
+to $0$ and is hence indeed the tail function of some discrete probability
+measure $\psi^{(c)}(j\tau|y)$ given by
 \begin{align} \label{eq:def-psi}
-  \psi^{(c)}(j\tau | y) = H^{(c)}((j-1)\tau | y) - H^{(c)}(j\tau | y),
-  \quad j = 0, 1, 2, \ldots
+  \psi^{(c)}(j\tau | y) = \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y),
+  \quad j = 1, 2, \ldots
 \end{align}
-Note that $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
+Note that $\psi^{(c)}(0\tau | y) = 1-1= 0$, meaning that waiting times are always
 strictly positive.
 
 
@@ -346,6 +367,23 @@ c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= 
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
 We give calculations in the appendix which confirm that the above four
 conditions indeed hold for $K^{(c)}(z,w|x,t)$.
+
+### Remark {-}
+
+The alternative kernel 
+\begin{align} \label{eq:Kalt}
+  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
+  + n(x, t) \delta_0(z)
+  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
+  \psi^{(c)}(w|x).
+\end{align}
+also satisfies \eqref{eq:cond1} -- \eqref{eq:cond4}. 
+The difference to \eqref{eq:K} is that the probabilities 
+$r^{(c)}(x,t), \ell^{(c)}(x,t)$ and $n(x,t)$ are evaluated at the 
+_beginning_ of a waiting time, rather than the end. 
+As investigated by @Angstmann2015, this difference vanishes in the limit 
+as $c \to \infty$. 
+
 
 # Semi-Markov numeric scheme
 
@@ -491,7 +529,7 @@ Due to the convergence \eqref{eq:CTRW-J1}, we have
 \end{align}
 for all bounded continuous real-valued $f$ defined on $\mathbb R$.
 Assuming that the distribution of $X_t$ has a probability density,
-we may take $f$ to be an indicator function of an interval $(a,b)$,
+we may replace $f$ by an indicator function of an interval $(a,b)$,
 and \eqref{eq:consistency} reads
 \begin{align}
   \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
@@ -526,7 +564,7 @@ Within this semi-Markov framework, we may now implement the above numeric scheme
 
 For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the diffusivity we have $a(x) = T_0^{-\beta(x)}$ where $T_0$ is the time scale and waiting time distribution tail function $\Psi(x,t) = \frac{t^{-\beta(x)}}{\Gamma (1-\beta(x))}$. For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure \ref{fig:varyexp1} shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
 
-In @Korabel2010, the authors modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$.
+@Korabel2010 modelled a subdiffusive system with $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, while at the interface ($x=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with $\beta (x) = 0.55e^{-x^2} + 0.15 + 0.5/(1+e^{-2x})$, noting that $\lim_{x\to -\infty} \beta (x) = 0.15$, $\lim_{x\to \infty} \beta (x) = 0.65$, while at the interface ($x=0$) the system is near-diffusive with $\beta = 0.95$. Figure \ref{fig:varyexp2} shows the evolution of the density $P(x,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($x<0$) which has lower exponent $\beta$.
 
 ```{r varyexp1}
 source("../R/varyExp-DTSM.R")
@@ -557,15 +595,14 @@ source("../R/varyExp-varyingtempering.R")
 
 \appendix
 
-# Appendix
+# Checking conditions \eqref{eq:cond1} -- \eqref{eq:cond4}
 
-## Preliminary calculations
+The following lemma pertains to the calculations in the waiting times 
+of \eqref{eq:cond1} -- \eqref{eq:cond4}:
 
-We need to calculate the following sums which will be useful for checking conditions
-\eqref{eq:cond3} \& \eqref{eq:cond4}.
-
-\begin{lemma}
-The waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
+\begin{lemma} \label{lem:psi}
+Under condition \eqref{eq:blowup}, 
+the waiting time distribution \eqref{eq:def-psi} satisfies, as $c \to \infty$,
 \begin{align}
 \label{eq:psi2delta}
 \int f(w) \psi^{(c)}(w|y)\,dw = \sum_{j = 1}^\infty f(j\tau) \psi^{(c)}(j\tau|y)
@@ -580,19 +617,25 @@ c \int_0^\varepsilon w \psi^{(c)}(w|y)\,dw
 &\to d(y)
 %- \varepsilon \overline{\nu}(\varepsilon)
 %+ \int_0^\varepsilon \overline{\nu}(w)\,dw,
-+ \mathcal O(\varepsilon^{1-\beta(y)}), \quad \varepsilon > 0.
++ \mathcal O\left(\frac{\varepsilon^{1-\beta(y)}}{\Gamma(1-\beta(y))}\right), \quad \varepsilon > 0.
 \end{align}
-where $f$ and $g$ are bounded continuous, and where $g$ vanishes in a neighbourhood of $0$.
+for any bounded continuous $f$ and $g$, where $g$ vanishes in a 
+neighbourhood of $0$.
 \end{lemma}
 
 
 _Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
 For \eqref{eq:psi-non-local}, we first note that
-$$
+\begin{align} \label{eq:tail-to-zero}
 c \Psi^{(c)}(w|y)
-= c \wedge [\overline \nu(w - \tau d(y))] \to \overline \nu(w).
-$$
-If $g$ is differentiable, we may calculate
+= c d(y) \mathbf 1(w \le \tau) 
++ [c(1-d(y))] \wedge \overline \nu(w_\tau) \to \overline \nu(w), 
+\quad c \to \infty,
+\end{align}
+for every $w > 0$ (recall that $tau \downarrow 0$). 
+Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
+so that $g(\varepsilon) = 0$. 
+Using (Lebesgue-Stieltjes) integration by parts, we may calculate
 \begin{align*}
 c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 = c \int_\varepsilon^\infty g(w) \psi^{(c)}(w|y)\,dw
@@ -600,47 +643,45 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 \\
 \to \int_\varepsilon^\infty g'(w) \overline \nu(w|y)\,dw
 = \int_\varepsilon^\infty g(w) \nu(w|y)\,dw
-= \int_0^\infty g(w) \nu(w|y)\,dw
+= \int_0^\infty g(w) \nu(w|y)\,dw.
 \end{align*}
-But differentiable functions lie dense in the space of bounded continuous functions, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local},
-first note that
-$$
-1 = H^{(c)}(w|y)
-\Longleftrightarrow
-w \le \overline \nu^{-1}(\tau^{-1}|y) + d(y)\tau =: C(y,c).
-$$
-Hence we have $j\tau \le C(y,c) \Longrightarrow \psi^{(c)}(j\tau|y) = 0$.
-We let $n_1 = \lfloor C(y,c) / \tau \rfloor$ and
-$n_2 = \lfloor \varepsilon / \tau \rfloor$.
-Then by assumption \eqref{eq:ass4},
-\begin{align}
-\overline \nu(c|y)^{-1} \sim \Gamma(1-\beta(y)) c^{-1/\beta},
-\quad c \to \infty,
-\end{align}
-and hence
-\begin{align} \label{eq:to-dy}
-\lim_{c \to \infty} \tau n_1 c = \lim_{c \to \infty} \tau \overline \nu^{-1}(c | y) + d(y) = d(y)
-\end{align}
-Then the left side of \eqref{eq:psi-local} is
+But bounded continuous functions can be approximated by differentiable 
+functions with arbitrary accuracy, so \eqref{eq:psi-non-local} follows.
+For \eqref{eq:psi-local}, first define 
+$n(\tau) = \lfloor \varepsilon / \tau \rfloor$.
+The left side of \eqref{eq:psi-local} computes to
 \begin{align*}
-&c \sum_{C(y,c) < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
-= c \sum_{j=n_1}^{n_2} j\tau \left[ H^{(c)}(j\tau | y) - H^{(c)}((j+1)\tau | y)\right]
+&c \sum_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
+= c \sum_{j=1}^{n(\tau)} j\tau \left[ \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y)\right]
 \\
-&= c n_1 \tau H^{(c)}(n_1 \tau | y) - c (n_2+1) \tau H^{(c)}((n_2+1) \tau | y)
-+ \tau \sum_{j=n_1}^{n_2} cH^{(c)}(j\tau)
+&= c \sum_{j=0}^{n(\tau)-1} (j+1)\tau \Psi^{(c)}(j\tau | y)
+  -c \sum_{j=1}^{n(\tau)} j\tau \Psi^{(c)}(j\tau | y)
+\\
+&=  \tau c\Psi^{(c)}(0|y) 
++ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
+- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
+\\
+&= \tau c \left[ d(y) + (1-d(y)) \wedge \frac{\infty}{c} \right]
++ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
+- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
+\\
+&\to d(y) 
++ \int_0^\varepsilon \overline \nu(w | y)\,dw 
+- \varepsilon \overline \nu(\varepsilon)
+= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right),
 \end{align*}
-where for the second equality sign, we have splitted the sum in two, shifted the index in the second resulting second sum, and simplified the result.
-In the first term of the result, we have $H^{(c)}(n_1 \tau | y) = 1$ and \eqref{eq:to-dy}.  For the second term, note that $n_2 \tau \to \varepsilon$, and
-$c H^{(c)}(w|y) \to \overline \nu(w)$ for every $w > 0$.
-And finally, the last term is seen to be the Riemann sum of an integral. Keeping in mind that as $c \to \infty$, $C(y,c) \downarrow 0$ and again that $c H^{(c)}(w|y) \to \overline \nu(w)$, the above converges to
-\begin{align*}
-d(y) - \varepsilon \overline \nu(\varepsilon | y)
-+ \int_0^\varepsilon \overline \nu(w)\,dw,
-\end{align*}
-which is $d(y) + \mathcal O(\varepsilon^{1-\beta(y)})$ due to \eqref{eq:ass4}.
+due to \eqref{eq:tail-to-zero}, limits of Riemann sums, and
+$\tau n(\tau) \to \varepsilon$.
+In the error term in the last line, we have used the technical assumption 
+\eqref{eq:blowup}.
+\qed
 
-For later use, we note that
+The following lemma pertains to the jump distributions
+in \eqref{eq:cond1}--\eqref{eq:cond4}: 
+
+\begin{lemma}\label{lem:jumps}
+The jump probabilities $\ell^{(c)}(x,t), r^{(c)}(x,t)$ and 
+$n(x,t)$ satisfy
 \begin{align}
 \label{eq:jump-calc-b}
 c [-\chi \ell^{(c)}(x,t+w) + \chi r^{(c)}(x,t+w)]
@@ -653,30 +694,16 @@ c \chi^2 [\ell^{(c)}(x,t+w) + r^{(c)}(x,t+w)] &= a(x,t+w)
 &\to f(0)
 \end{align}
 as $c \to \infty$ for all bounded continuous $f$.
+\end{lemma}
 
+_Proof._ This follows easily from the definitions of the jump probabilities. 
+\qed
 
-\subsection{Conditions \eqref{eq:cond1} -- \eqref{eq:cond4}}
-
-Assume now that a jump happens at time $t$ and the location of the walker immediately after the jump is $(x,t)$.
-Then the next jump will happen at time $t+w$, where $w$ is drawn from $\psi^{(c)}(w|y)$, and it is common to evaluate the probabilities to jump left/right/self-jump at time $t+w$.  In this case the space-time transition kernel governing the DTRW is
-\begin{align} \label{eq:DTRWSTJK}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
-  + n(x, t+w) \delta_0(z)
-  + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-Alternatively, one may assume that the bias to jump left/right/self-jump is evaluated at the \emph{beginning} of a waiting time, which leads to
-\begin{align} \label{eq:DTRWSTJK2}
-  K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t)\delta_{+\chi}(z)
-  + n(x, t) \delta_0(z)
-  + \ell^{(c)}(x, t) \delta_{-\chi}(z)\right]
-  \psi^{(c)}(w|x).
-\end{align}
-These dynamics were considered in @Angstmann2015, where it was already found that \eqref{eq:DTRWSTJK} and \eqref{eq:DTRWSTJK2} yield the same CTRW limit process.  Indeed, both kernels satisfy conditions \eqref{eq:cond1}--\eqref{eq:cond4}.
-
-To see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
-\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let $\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use \eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
-
+Finally, to see that \eqref{eq:cond1}--\eqref{eq:cond2} hold, use
+\eqref{eq:jump-calc-b}--\eqref{eq:jump-calc-a} and \eqref{eq:psi2delta}. 
+To see \eqref{eq:cond3}, use \eqref{eq:psi-local} and let 
+$\varepsilon \downarrow 0$; and finally, to see \eqref{eq:cond4}, use 
+\eqref{eq:psi-non-local} and \eqref{eq:jump2delta}.
 
 
 References {#references .unnumbered}
