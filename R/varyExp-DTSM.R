@@ -50,7 +50,7 @@ init_DTRM <- function(xrange,
   age <- (1:(n+1)) * tau
   h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
-  survival_probs <- h[ , -1] / h[ , -n]
+  survival_probs <- h[ , -1] / h[ , -(n+1)]
 
   list(xi0 = xi0, survival_probs = survival_probs)
 }
@@ -121,7 +121,7 @@ step_xi <- function(xi, Sprob, Jprob) {
 #   distributions xi   
 DTSM <- function(xrange = c(-2, 2),
                  snapshots = c(0.5, 1, 2),
-                 age_max = max(snapshots),
+                 age_max = 1, #max(snapshots),
                  c = 1000,
                  chi = 1/sqrt(c),
                  tau = (1/c)^(2),
