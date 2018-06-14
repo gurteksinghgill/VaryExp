@@ -11,8 +11,8 @@ default_a <- function(x,t)
   1
 default_b <- function(x,t)
   0
-default_d <- function(x,t) 
-  0
+default_d <- function(x) 
+  0.9
 
 # arguments: 
 #   xrange: a pair of numbers (xmin, xmax)
@@ -42,15 +42,19 @@ init_DTRM <- function(xrange,
   xi0[midpoint_index, 1] <- 1 / chi
   
   # set up survival probability matrix
-  Psi_with_d <- function(x, t)
-    Psi(x - d(x) / c, t)
+  Psi_with_d <- function(x,t) {
+    if (t <= tau)
+      d(x)
+    else 
+      min(1-d(x) , Psi(x,t)/c)
+  }
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
   age <- (1:(n+1)) * tau
   h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
-  survival_probs <- h[ , -1] / h[ , -n]
+  survival_probs <- h[ , -1] / h[ , -(n+1)]
 
   list(xi0 = xi0, survival_probs = survival_probs)
 }
@@ -121,10 +125,10 @@ step_xi <- function(xi, Sprob, Jprob) {
 #   distributions xi   
 DTSM <- function(xrange = c(-2, 2),
                  snapshots = c(0.5, 1, 2),
-                 age_max = max(snapshots),
+                 age_max = 1, #max(snapshots),
                  c = 1000,
                  chi = 1/sqrt(c),
-                 tau = 1/c,
+                 tau = (1/c)^(2),
                  a = default_a,
                  b = default_b,
                  Psi = default_Psi,
