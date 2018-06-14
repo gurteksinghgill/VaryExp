@@ -28,9 +28,9 @@ default_d <- function(x)
 #   * an (m,n) matrix of survival probabilities
 init_DTRM <- function(xrange,
                       age_max,
-                      c = 10,
-                      chi = 0.1,
-                      tau = 0.1,
+                      c,
+                      chi,
+                      tau,
                       Psi = default_Psi,
                       d = default_d) {
   # set up space-age-lattice
@@ -125,10 +125,10 @@ step_xi <- function(xi, Sprob, Jprob) {
 #   distributions xi   
 DTSM <- function(xrange = c(-2, 2),
                  snapshots = c(0.5, 1, 2),
-                 age_max = 1, #max(snapshots),
+                 age_max = max(snapshots),
                  c = 1000,
                  chi = 1/sqrt(c),
-                 tau = (1/c)^(2),
+                 tau = 1/c,
                  a = default_a,
                  b = default_b,
                  Psi = default_Psi,
