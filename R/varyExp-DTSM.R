@@ -1,7 +1,7 @@
 library(ggplot2)
 library(tidyverse)
 
-default_Psi <- function(x, t) {
+default_nuTail <- function(x, t) {
   if (t <= 0)
     Inf
   else
@@ -20,7 +20,7 @@ default_d <- function(x)
 #   c: master scaling parameter
 #   chi: spatial lattice spacing
 #   tau: age lattice spacing
-#   Psi: space-dependent tail function of Levy measure
+#   nuTail: space-dependent tail function of Levy measure
 #   d: space-dependent temporal drift
 # returns: a list of two items: 
 #   * an (m,n) matrix of the CTRW states, with the first dimension
@@ -31,7 +31,7 @@ init_DTRM <- function(xrange,
                       c,
                       chi,
                       tau,
-                      Psi = default_Psi,
+                      nuTail = default_nuTail,
                       d = default_d) {
   # set up space-age-lattice
   m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
@@ -42,17 +42,17 @@ init_DTRM <- function(xrange,
   xi0[midpoint_index, 1] <- 1 / chi
   
   # set up survival probability matrix
-  Psi_with_d <- function(x,t) {
+  nuTail_with_d <- function(x,t) {
     if (t <= tau)
       d(x)
     else 
-      min(1-d(x) , Psi(x,t)/c)
+      min(1-d(x) , nuTail(x,t)/c)
   }
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
   age <- (1:(n+1)) * tau
-  h <- outer(x, age, Vectorize(Psi_with_d)) / c # see paper for definition of h
+  h <- outer(x, age, Vectorize(nuTail_with_d)) / c # see paper for definition of h
   h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
 
@@ -118,7 +118,7 @@ step_xi <- function(xi, Sprob, Jprob) {
 #   tau: temporal grid parameter
 #   a: diffusivity
 #   b: drift
-#   Psi: tail function of Levy measure, truncated from above at 1
+#   nuTail: tail function of Levy measure, truncated from above at 1
 #   d: temporal drift
 # Returns:
 #   a list of the same length as snapthots, with containing the space-age
@@ -131,7 +131,7 @@ DTSM <- function(xrange = c(-2, 2),
                  tau = 1/c,
                  a = default_a,
                  b = default_b,
-                 Psi = default_Psi,
+                 nuTail = default_nuTail,
                  d = default_d) {
   foo <-
     init_DTRM(
@@ -140,7 +140,7 @@ DTSM <- function(xrange = c(-2, 2),
       c = c,
       chi = chi,
       tau = tau,
-      Psi = Psi,
+      nuTail = nuTail,
       d = d
     )
   xi   <- foo$xi0
