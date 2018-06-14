@@ -11,8 +11,8 @@ default_a <- function(x,t)
   1
 default_b <- function(x,t)
   0
-default_d <- function(x,t) 
-  0
+default_d <- function(x) 
+  0.9
 
 # arguments: 
 #   xrange: a pair of numbers (xmin, xmax)
@@ -42,8 +42,12 @@ init_DTRM <- function(xrange,
   xi0[midpoint_index, 1] <- 1 / chi
   
   # set up survival probability matrix
-  Psi_with_d <- function(x, t)
-    Psi(x - d(x) / c, t)
+  Psi_with_d <- function(x,t) {
+    if (t <= tau)
+      d(x)
+    else 
+      min(1-d(x) , Psi(x,t)/c)
+  }
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
