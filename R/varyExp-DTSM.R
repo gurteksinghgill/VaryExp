@@ -43,10 +43,10 @@ init_DTRM <- function(xrange,
   
   # set up survival probability matrix
   nuTail_with_d <- function(x,t) {
+    out <- min(1 - d(x), nuTail(x, t) / c)
     if (t <= tau)
-      d(x)
-    else 
-      min(1-d(x) , nuTail(x,t)/c)
+      out <- out + d(x)
+    out
   }
   x <- seq(from = xrange[1],
            to = xrange[2],
