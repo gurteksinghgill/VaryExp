@@ -567,7 +567,7 @@ For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the di
 For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure [fig:varyexp1] shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
 
 
-```{r varyexp1}
+```{r varyexp1, include=FALSE}
 source("../R/varyExp-DTSM.R")
 source("../R/varyExp-varyingexp1.R")
 ```
@@ -577,7 +577,7 @@ source("../R/varyExp-varyingexp1.R")
 In [Korabel2010], the authors modelled a subdiffusive system with a discontinuous exponent $\beta = 0.3$ for $y<0$ and $\beta = 0.75$ for $y>0$, while at the interface ($y=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with continuous $\beta (y) = 0.55e^{-y^2} + 0.15 + 0.5/(1+e^{-2y})$, noting that $\lim_{y\to -\infty} \beta (y) = 0.15$, $\lim_{y\to \infty} \beta (y) = 0.65$, while at the interface ($y=0$) the system is near-diffusive with $\beta = 0.95$. Figure [fig:varyexp2] shows the evolution of the density $P(y,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($y<0$) which has lower exponent $\beta$.
 
 
-```{r varyexp2}
+```{r varyexp2, include=FALSE}
 source("../R/varyExp-varyingexp2.R")
 ```
 
@@ -588,7 +588,7 @@ For constant $a$, $b$ and $d$ with $d \geq 0$ and $\nu(\omega|y) \equiv \nu(\ome
 
 Here we are now able to consider a qualitatively similar mixed type fractional diffusion by defining $\bar \nu(\omega|y) = p(y) \bar \nu_{\beta_1}(\omega) + (1-p(y)) \bar \nu_{\beta_2}(\omega)$ where $y, p(y) \in [0,1]$. The weight function $p(y)$ allows us  to vary the bifractional mixture in space. Figure [fig:varyingmixture] shows the resulting PDF $P(y,t)$ when the weight function follows a logistic function $p(y) = 1/(1+e^{-10y + 5})$ on $y\in[0,1]$ and initial condition is $P(dy,0) = \delta_0 (dy)$. Note that as $t \to \infty$, $P(y,t) \to \delta(y-1)$ (see [Fedotov/Falconer]), hence [fig:varyingmixture] represents the intermediate evolution of the density, the speed of which is controlled by parameters $\beta_1$, $\beta_2$ and $p(y)$.
 
-```{r varymixture}
+```{r varymixture, include=FALSE}
 source("../R/varyExp-varyingmixture.R")
 ```
 
@@ -596,7 +596,7 @@ source("../R/varyExp-varyingmixture.R")
 
 The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
 
-```{r varytempering}
+```{r varytempering, include=FALSE}
 source("../R/varyExp-varyingtempering.R")
 ```
 

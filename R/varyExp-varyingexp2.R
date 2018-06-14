@@ -1,4 +1,3 @@
-source("R/varyExp-DTSM.R")
 #Parameters
 alpha <- function(x)
   0.55 * exp(-x^2) + 0.15 + 0.5 / (1 + exp(-2 * x))

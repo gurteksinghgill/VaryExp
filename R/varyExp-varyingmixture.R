@@ -1,4 +1,3 @@
-source("R/varyExp-DTSM.R")
 #Parameters
 alpha1 <- 0.25
 alpha2 <- 0.75
