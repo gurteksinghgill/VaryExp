@@ -567,7 +567,7 @@ For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the di
 For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure [fig:varyexp1] shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
 
 
-```{r varyexp1, include=TRUE, echo=FALSE, message=FALSE}
+```{r varyexp1, include=TRUE, echo=FALSE, message=FALSE, fig.cap="A medium which is more 'anomalous' to the left than to the right, see anomalous exponent (dashed line)."}
 source("../R/varyExp-DTSM.R")
 alpha <- function(x)
   0.5 / (1 + exp(-x)) + 0.25
@@ -598,7 +598,7 @@ out %>%
 In [Korabel2010], the authors modelled a subdiffusive system with a discontinuous exponent $\beta = 0.3$ for $y<0$ and $\beta = 0.75$ for $y>0$, while at the interface ($y=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with continuous $\beta (y) = 0.55e^{-y^2} + 0.15 + 0.5/(1+e^{-2y})$, noting that $\lim_{y\to -\infty} \beta (y) = 0.15$, $\lim_{y\to \infty} \beta (y) = 0.65$, while at the interface ($y=0$) the system is near-diffusive with $\beta = 0.95$. Figure [fig:varyexp2] shows the evolution of the density $P(y,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($y<0$) which has lower exponent $\beta$.
 
 
-```{r varyexp2, include=TRUE, message=FALSE, echo=FALSE}
+```{r varyexp2, include=TRUE, message=FALSE, echo=FALSE, fig.cap="An interface problem."}
 #Parameters
 alpha <- function(x)
   0.55 * exp(-x^2) + 0.15 + 0.5 / (1 + exp(-2 * x))
