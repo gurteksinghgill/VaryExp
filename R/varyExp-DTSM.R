@@ -35,6 +35,11 @@ init_DTRM <- function(xrange,
                       d = default_d) {
   # set up space-age-lattice
   m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
+  x <- seq(from = xrange[1],
+           to = xrange[2],
+           length.out = m)
+  if (!all(d(x) >= 0) || !all(d(x) <= 1))
+    stop("Temporal drift needs to satisfy 0 <= d(x) <= 1.")
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
   # Put initial mass on center lattice point with age 0:
@@ -48,13 +53,14 @@ init_DTRM <- function(xrange,
       out <- out + d(x)
     out
   }
-  x <- seq(from = xrange[1],
-           to = xrange[2],
-           length.out = m)
   age <- (1:(n+1)) * tau
   h <- outer(x, age, Vectorize(Psi)) / c # see paper for definition of h
+  if (!all(h >= 0))
+    stop("Survival function can't be negative.")
   h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
+  if (!all(survival_probs >= 0))
+    stop("Make sure nuTail is decreasing in t.")
 
   list(xi0 = xi0, survival_probs = survival_probs)
 }
@@ -71,7 +77,11 @@ jump_probs <- function(x, t, a = default_a, b = default_b) {
   m <- length(x)
   chi <- diff(range(x)) / m
   a_vec <- sapply(x, function(x) a(x,t))
+  if (!all(a_vec > 0))
+    stop("Diffusivity needs to be positive.")
   b_vec <- sapply(x, function(x) b(x,t))
+  if (!all(chi * abs(b_vec) <= a_vec))
+    stop("Some jump probabilities are negative. Fix by increasing c.")
   left  <- (a_vec - chi * b_vec) / 2
   right <- (a_vec + chi * b_vec) / 2
   center <- 1 - a_vec
@@ -126,7 +136,7 @@ step_xi <- function(xi, Sprob, Jprob) {
 DTSM <- function(xrange = c(-2, 2),
                  snapshots = c(0.5, 1, 2),
                  age_max = max(snapshots),
-                 c = 1000,
+                 c = 100,
                  chi = 1/sqrt(c),
                  tau = 1/c,
                  a = default_a,
