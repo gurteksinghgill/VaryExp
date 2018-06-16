@@ -42,7 +42,7 @@ init_DTRM <- function(xrange,
   xi0[midpoint_index, 1] <- 1 / chi
   
   # set up survival probability matrix
-  nuTail_with_d <- function(x,t) {
+  Psi <- function(x,t) {
     out <- min(1 - d(x), nuTail(x, t) / c)
     if (t <= tau)
       out <- out + d(x)
@@ -52,7 +52,7 @@ init_DTRM <- function(xrange,
            to = xrange[2],
            length.out = m)
   age <- (1:(n+1)) * tau
-  h <- outer(x, age, Vectorize(nuTail_with_d)) / c # see paper for definition of h
+  h <- outer(x, age, Vectorize(Psi)) / c # see paper for definition of h
   h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
 
