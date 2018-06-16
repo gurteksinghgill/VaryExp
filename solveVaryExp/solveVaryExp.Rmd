@@ -602,15 +602,27 @@ In [Korabel2010], the authors modelled a subdiffusive system with a discontinuou
 #Parameters
 alpha <- function(x)
   0.55 * exp(-x^2) + 0.15 + 0.5 / (1 + exp(-2 * x))
-Psi <- function(x,t) {
+nuTail <- function(x,t) {
   if (t <= 0)
     Inf
   else
     (t^(-alpha(x))  )/gamma(1-alpha(x))
 }
 
-out <- DTSM(Psi = Psi, xrange = c(-1,1), snapshots = 2^(1:5), c = 25)
-plot_DTSM_output(out)
+out <- DTSM(nuTail = nuTail, snapshots = 2^(-1:4), c = 225, d = function(x) 0) %>% rho_df()
+
+out %>% 
+  gather(what, density,-x) %>%
+  ggplot(aes(x = x)) +
+  geom_line(aes(y = density, col = what)) + 
+  geom_line(
+  data = out %>% mutate(alpha = alpha(x)) %>% select(x, alpha) %>%
+    add_column(what = "alpha"),
+    aes(x = x, y = alpha, col = "alpha"),
+    linetype = 2
+  ) + 
+  theme(legend.title = element_blank())
+
 ```
 
 
