@@ -171,26 +171,18 @@ DTSM <- function(xrange = c(-2, 2),
   list(xi_list = xi_list, xrange = xrange, snapshots = snapshots)
 }
 
-
-plot_DTSM_output <- function(DTSM_output) {
-  library(tibble)
-  densities_df <- function(xi_list, xrange, snapshots) {
-    N <- length(xi_list)
-    xi <- xi_list[[1]]
-    m <- dim(xi)[1]
-    x <- seq(xrange[1], xrange[2], length.out = m)
-    out <- tibble(x = x)
-    for (i in 1:N) {
-      rho <- rowSums(xi_list[[i]])
-      out[paste0("t=", snapshots[i])] <- rho
-    }
-    out
-  }
-  xi_list <- DTSM_output[["xi_list"]]
-  xrange <- DTSM_output[["xrange"]]
+rho_df <- function(DTSM_output) {
+  xi_list   <- DTSM_output[["xi_list"]]
+  xrange    <- DTSM_output[["xrange"]]
   snapshots <- DTSM_output[["snapshots"]]
-  densities_df(xi_list, xrange, snapshots) %>%
-    gather(snapshot, density,-x) %>%
-    ggplot(aes(x = x, y = density, col = snapshot)) +
-    geom_line()
+  N   <- length(xi_list)
+  xi  <- xi_list[[1]]
+  m   <- dim(xi)[1]
+  x   <- seq(xrange[1], xrange[2], length.out = m)
+  out <- tibble(x = x)
+  for (i in 1:N) {
+    rho <- rowSums(xi_list[[i]])
+    out[paste0("t_", i, "=", snapshots[i])] <- rho
+  }
+  out
 }
