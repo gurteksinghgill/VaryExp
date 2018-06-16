@@ -171,7 +171,7 @@ DTSM <- function(xrange = c(-2, 2),
       counter <- counter + 1
       if (counter %% 1000 == 0)
         message("Finished ", counter, " iterations.")
-      Jprob <- jump_probs(x = x, t = t)
+      Jprob <- jump_probs(x = x, t = t, a = a, b = b)
       xi <- step_xi(xi = xi,
                     Sprob = Sprob,
                     Jprob = Jprob)
