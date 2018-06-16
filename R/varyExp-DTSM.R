@@ -174,7 +174,7 @@ DTSM <- function(xrange = c(-2, 2),
 
 plot_DTSM_output <- function(DTSM_output) {
   library(tibble)
-  space_age_dataframe <- function(xi_list, xrange, snapshots) {
+  densities_df <- function(xi_list, xrange, snapshots) {
     N <- length(xi_list)
     xi <- xi_list[[1]]
     m <- dim(xi)[1]
@@ -189,7 +189,7 @@ plot_DTSM_output <- function(DTSM_output) {
   xi_list <- DTSM_output[["xi_list"]]
   xrange <- DTSM_output[["xrange"]]
   snapshots <- DTSM_output[["snapshots"]]
-  space_age_dataframe(xi_list, xrange, snapshots) %>%
+  densities_df(xi_list, xrange, snapshots) %>%
     gather(snapshot, density,-x) %>%
     ggplot(aes(x = x, y = density, col = snapshot)) +
     geom_line()
