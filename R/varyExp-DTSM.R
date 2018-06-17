@@ -12,7 +12,7 @@ default_a <- function(x,t)
 default_b <- function(x,t)
   0
 default_d <- function(x) 
-  0.9
+  0
 
 # arguments: 
 #   xrange: a pair of numbers (xmin, xmax)
