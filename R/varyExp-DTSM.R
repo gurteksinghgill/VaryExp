@@ -31,8 +31,8 @@ init_DTRM <- function(xrange,
                       c,
                       chi,
                       tau,
-                      nuTail = default_nuTail,
-                      d = default_d) {
+                      nuTail,
+                      d) {
   # set up space-age-lattice
   m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
   x <- seq(from = xrange[1],
@@ -57,7 +57,6 @@ init_DTRM <- function(xrange,
   h <- outer(x, age, Vectorize(Psi)) / c # see paper for definition of h
   if (!all(h >= 0))
     stop("Survival function can't be negative.")
-  h[h > 1] <- 1
   survival_probs <- h[ , -1] / h[ , -(n+1)]
   if (!all(survival_probs >= 0))
     stop("Make sure nuTail is decreasing in t.")
@@ -73,9 +72,9 @@ init_DTRM <- function(xrange,
 # returns: 
 #   a list with three items, each a vector of same length as x, 
 #   for the probabilities to jump left, right and self-jumps
-jump_probs <- function(x, t, a = default_a, b = default_b) {
+jump_probs <- function(x, t, a, b) {
   m <- length(x)
-  chi <- diff(range(x)) / m
+  chi <- diff(range(x)) / (m-1)
   a_vec <- sapply(x, function(x) a(x,t))
   if (!all(a_vec > 0))
     stop("Diffusivity needs to be positive.")
@@ -123,16 +122,18 @@ step_xi <- function(xi, Sprob, Jprob) {
 #   xrange: 2-vector delineating the domain
 #   snapshots: a vector of times at which location-age densities xi are computed
 #   age_max: maximum age
-#   c: master scalint parameter
+#   c: master scaling parameter
 #   chi: spatial grid parameter
 #   tau: temporal grid parameter
 #   a: diffusivity
 #   b: drift
-#   nuTail: tail function of Levy measure, truncated from above at 1
-#   d: temporal drift
+#   nuTail: tail function of Levy measure
+#   d: temporal drift, between 0 and 1
 # Returns:
-#   a list of the same length as snapthots, with containing the space-age
-#   distributions xi   
+#   a list with itmes: 
+#       1. list of xis at the snapshots
+#       2. the xrange
+#       3. the snapshots
 DTSM <- function(xrange = c(-2, 2),
                  snapshots = c(0.5, 1, 2),
                  age_max = max(snapshots),
