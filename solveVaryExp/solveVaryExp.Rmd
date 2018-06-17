@@ -277,37 +277,38 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 
 ## Waiting time distribution
 
-First, define a random waiting time $\tilde W^{(c)}_y$ with the following tail function:
-$$
-\mathbf P(\tilde W^{(c)}_y > w) 
-= 1 \wedge \frac{\overline \nu(w | y)}{c (1-d(y))}, \quad w > 0,
-$$
-where $a \wedge b := \min\{a, b\}$.
-Then let $W^{(c)}_y$ be a random waiting time which has the value 
-$\tau$ with probability $d(y)$ and $\tilde W^{(c)}_y$ with probability $1-d(y)$. 
-Finally, discretize $W^{(c)}_y$ by rounding up to the nearest multiple of 
-$\tau$. This results in a random discrete waiting time with the tail 
-function 
+We define the discrete waiting time distribution $\psi^{(c)}(j\tau | x)$ 
+as a mixture of a "local" and a "nonlocal" component:
 \begin{align}
-\Psi^{(c)}(w|y) 
-= d(y) \mathbf 1\{w \le \tau\} 
-+ (1-d(y)) \wedge \frac{\overline \nu(w_\tau | y)}{c},
+\psi^{(c)}(j\tau | x) := d(x) \psi^{{(c)}}_{\rm loc}(j\tau | x) 
++ (1-d(x)) \psi^{(c)}_{\rm nonloc}(j\tau|x), \quad j=1,2,\ldots
+\label{eq:def-psi}
 \end{align}
-where $w_\tau$ be the smallest lattice point which is not smaller than $w$; 
-i.e.
+The local part is simply deterministic, with all mass at $\tau$, that is 
+$\psi^{(c)}_{\rm loc}(\tau | x) = 1$. 
+The nonlocal part is the truncated, normalized and discretized
+Lévy measure: First, define the function
+$$
+H^{(c)}(w | x) = 1 \wedge \frac{\overline \nu(w|x)}{c},
+$$
+where $a \wedge b := \min\{a, b\}$. 
+For convenience, we say that $\overline \nu(w|x) = \infty$ if $w \le 0$.
+Then, define 
 \begin{align}
-w_\tau = j\tau \ge w > (j-1)\tau.
+w_\tau := j\tau, \quad \text{ where }  \quad j\tau \le w < (j+1)\tau.
 \label{eq:w-tau}
 \end{align}
-It is clear that for fixed $y$ and $c$,
-$t \mapsto \Psi^{(c)}(t|y)$ is a step function decreasing from $1$
-to $0$ and is hence indeed the tail function of some discrete probability
-measure $\psi^{(c)}(j\tau|y)$ given by
-\begin{align} \label{eq:def-psi}
-  \psi^{(c)}(j\tau | y) = \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y),
-  \quad j = 1, 2, \ldots
+
+
+Finally, note that $\Psi^{(c)}_{\rm nonloc}(w|x) := H^{(c)}(w_\tau | x)$ is
+piecewise constant with jumps in $\tau, 2\tau, \ldots$, and decreasing from 
+$1$ to $0$.
+We take this function to be the tail function of $\psi^{(c)}_{\rm nonloc}(w|x)$, 
+that is, 
+\begin{align}
+\psi^{(c)}_{\rm nonloc}(j\tau | x) = H^{(c)}((j-1)\tau | x) - H^{(c)}(j\tau | x). 
 \end{align}
-Note that $\psi^{(c)}(0\tau | y) = 1-1= 0$, meaning that waiting times are always
+We then have $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
 strictly positive.
 
 
@@ -574,8 +575,8 @@ alpha <- function(x)
 nuTail <- function(x,t) {
   if (t <= 0)
     Inf
-  else 
-    (t^(-alpha(x))  )/gamma(1-alpha(x)) 
+  else
+    (t^(-alpha(x))  )/gamma(1-alpha(x))
 }
 out <- DTSM(nuTail = nuTail, snapshots = 2^(1:5), c = 36, d = function(x) 0) %>% 
   rho_df() 
@@ -605,8 +606,8 @@ alpha <- function(x)
 nuTail <- function(x,t) {
   if (t <= 0)
     Inf
-  else
-    (t^(-alpha(x))  )/gamma(1-alpha(x))
+  else 
+    (t^(-alpha(x))  )/gamma(1-alpha(x)) 
 }
 
 out <- DTSM(nuTail = nuTail, snapshots = 2^(-1:4), c = 225, d = function(x) 0) %>% rho_df()
@@ -702,7 +703,13 @@ neighbourhood of $0$.
 \end{lemma}
 
 
-_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability
+distribution on the positive numbers with a tail function 
+$$
+\Psi^{(c)}(w|x) = d(x) \mathbf 1\{w \le \tau\}  +(1-d(x)) H^{(c)}(w_\tau|x)
+$$ 
+which for all $w>0$ satisfies $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$
+(recall that $\tau\downarrow 0$).
 For \eqref{eq:psi-non-local}, we first note that
 \begin{align} \label{eq:tail-to-zero}
 c \Psi^{(c)}(w|y)
@@ -710,7 +717,7 @@ c \Psi^{(c)}(w|y)
 + [c(1-d(y))] \wedge \overline \nu(w_\tau) \to \overline \nu(w), 
 \quad c \to \infty,
 \end{align}
-for every $w > 0$ (recall that $tau \downarrow 0$). 
+for every $w > 0$.
 Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
 so that $g(\varepsilon) = 0$. 
 Using (Lebesgue-Stieltjes) integration by parts, we may calculate
@@ -725,36 +732,41 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 \end{align*}
 But bounded continuous functions can be approximated by differentiable 
 functions with arbitrary accuracy, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local}, first define 
-$n(\tau) = \lfloor \varepsilon / \tau \rfloor$.
-The left side of \eqref{eq:psi-local} computes to
+
+Finally, for \eqref{eq:psi-local}, we consider the local and nonlocal parts 
+$\psi^{(c)}_{\rm loc}(w|x)$ and $\psi^{(c)}_{\rm nonloc}(w|x)$
+separately. For the local part, we have 
+$$
+c \int_0^\varepsilon w\, \psi^{(c)}_{\rm loc}(w|x)\,dw
+= c \tau \to 1.
+$$
+For the nonlocal part, we 
+use Lebesgue-Stieltjes integration by parts:
 \begin{align*}
-&c \sum_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
-= c \sum_{j=1}^{n(\tau)} j\tau \left[ \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y)\right]
+&\int_0^\varepsilon w\, \psi^{(c)}_{\rm nonloc}(w|x)\,dw
+=
+\int_0^\varepsilon w\, \left(-d\Psi^{(c)}_{\rm nonloc}(w|x) \right)
 \\
-&= c \sum_{j=0}^{n(\tau)-1} (j+1)\tau \Psi^{(c)}(j\tau | y)
-  -c \sum_{j=1}^{n(\tau)} j\tau \Psi^{(c)}(j\tau | y)
+&= - \left[ w \Psi^{(c)}_{\rm nonloc}(w|x)\right]_0^\varepsilon
++ \int_0^\varepsilon \Psi^{(c)}_{\rm nonloc}(w|x)\,dw
 \\
-&=  \tau c\Psi^{(c)}(0|y) 
-+ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
-- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
-\\
-&= \tau c \left[ d(y) + (1-d(y)) \wedge \frac{\infty}{c} \right]
-+ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
-- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
-\\
-&\to d(y) 
-+ \int_0^\varepsilon \overline \nu(w | y)\,dw 
-- \varepsilon \overline \nu(\varepsilon)
-= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right),
+&= - \varepsilon \Psi^{(c)}_{\rm nonloc}(\varepsilon|x)
++ \int_0^\varepsilon \Psi^{(c)}_{\rm nonloc}(w|x)\,dw
 \end{align*}
-due to \eqref{eq:tail-to-zero}, limits of Riemann sums, and
-$\tau n(\tau) \to \varepsilon$.
-In the error term in the last line, we have used the technical assumption 
-\eqref{eq:blowup}.
+Multiplying with $c$ and letting $c \to \infty$, the right hand side 
+converges to 
+$$
+-\varepsilon \overline \nu(\varepsilon|x) 
++ \int_0^\varepsilon \overline \nu(w|x)\,dw
+$$
+where both terms are of order 
+$\mathcal O\left(\varepsilon^{1-\beta(x)} / \Gamma(1-\beta(x))\right)$
+according to the technical assumption \eqref{eq:blowup}.
+\eqref{eq:psi-local} now follows from the definition \eqref{eq:def-psi}
+of $\psi^{(c)}(w|x)$. 
 \qed
 
-The following lemma pertains to the jump distributions
+The final lemma pertains to the jump distributions
 in \eqref{eq:cond1}--\eqref{eq:cond4}: 
 
 \begin{lemma}\label{lem:jumps}
