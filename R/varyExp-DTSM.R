@@ -34,7 +34,9 @@ init_DTRM <- function(xrange,
                       nuTail,
                       d) {
   # set up space-age-lattice
-  m <- 2 * round((xrange[2] - xrange[1]) / (2 * chi)) + 1 # to make it an odd number
+  m <- round((xrange[2] - xrange[1]) / chi)
+  if (m %% 2 == 1)
+    m <- m+1 # to make m even
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
@@ -42,9 +44,10 @@ init_DTRM <- function(xrange,
     stop("Temporal drift needs to satisfy 0 <= d(x) <= 1.")
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
-  # Put initial mass on center lattice point with age 0:
-  midpoint_index <- (m + 1)/2
-  xi0[midpoint_index, 1] <- 1 / chi
+  # Put initial mass on center two lattice points with age 0:
+  midpoint_index <- m/2
+  xi0[midpoint_index, 1]  <- 0.5 / chi
+  xi0[midpoint_index+1,1] <- 0.5 / chi
   
   # set up survival probability matrix
   Psi <- function(x,t) {
@@ -53,7 +56,7 @@ init_DTRM <- function(xrange,
       out <- out + d(x)
     out
   }
-  age <- (1:(n+1)) * tau
+  age <- (0:n) * tau
   h <- outer(x, age, Vectorize(Psi)) / c # see paper for definition of h
   if (!all(h >= 0))
     stop("Survival function can't be negative.")
