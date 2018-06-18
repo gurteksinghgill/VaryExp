@@ -8,7 +8,7 @@ default_nuTail <- function(x, t) {
     t ^ (-0.7) / gamma(1 - 0.7)
 }
 default_a <- function(x,t) 
-  1
+  0.9
 default_b <- function(x,t)
   0
 default_d <- function(x) 
