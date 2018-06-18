@@ -50,17 +50,19 @@ init_DTRM <- function(xrange,
   xi0[midpoint_index+1,1] <- 0.5 / chi
   
   # set up survival probability matrix
-  Psi <- function(x,t) {
-    out <- min(1 - d(x), nuTail(x, t) / c)
-    if (t <= tau)
-      out <- out + d(x)
-    out
-  }
+  # begin with nonlocal part:
+  Psi_nonloc <- function(x, t)
+    min(1, nuTail(x, t) / c)
   age <- (0:n) * tau
-  h <- outer(x, age, Vectorize(Psi)) / c # see paper for definition of h
+  h <- (1-d(x)) * outer(x, age, Vectorize(Psi_nonloc)) # see paper for definition of h
+  # now add the local part of psi:
+  h[ , 1] <- h[ , 1] + d(x)
+  
   if (!all(h >= 0))
     stop("Survival function can't be negative.")
   survival_probs <- h[ , -1] / h[ , -(n+1)]
+  # Zeros can occur. Dividing by 0 gives an NaN. We want these to be 0.
+  survival_probs[is.na(survival_probs)] <- 0
   if (!all(survival_probs >= 0))
     stop("Make sure nuTail is decreasing in t.")
 
