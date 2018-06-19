@@ -232,14 +232,37 @@ X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
 \end{align}
 $X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW.
 
-We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+## Coefficient representation {-}
+
+We note that the 4-tuple 
+\begin{align} \label{eq:coeff-tuple}
+\left(a(x,t), b(x,t), d(x), \overline \nu(w, x)\right)
+\end{align}
 concisely represents the Langevin process
 \eqref{eq:dY}--\eqref{eq:dZ}.
 However, the representation is only unique up to a multiplicative factor: 
-if every element in the 4-tuple is, say, doubled, 
+if every element in \eqref{eq:coeff-tuple}, say, doubled, 
 then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
 the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
 hence does not affect the distribution of the trajectories $X(t)$. 
+This remains true even if the speed varies with the location $(x,t)$ of 
+$(Y_u,Z_u)$.
+
+Assuming that the coefficients are all bounded functions in $(x,t)$, 
+we hence divide by a large enough number so that $a(x,t) < 1$ for all $(x,t)$. 
+(At $a(x,t) = 1$, numerical instabilities may occur, which are smoothed out 
+if e.g. $a(x,t) < 0.9$ throughout the domain.)
+In the derivation of our algorithm, we will transform the tuple \eqref{eq:coeff-tuple}
+as follows: Define $\theta(x)$ via $d(x) = \theta(x) / (1-\theta(x))$. 
+Then multiply the tuple \eqref{eq:coeff-tuple} by $(1-\theta(x))$, to get 
+the transformed tuple
+\begin{align} \label{eq:coeff-tuple-trans}
+\left((1-\theta(x)) a(x,t), (1-\theta(x)) b(x,t), \theta(x), 
+(1-\theta(x)) \overline \nu(w, y)\right).
+\end{align}
+
+
+
 Hence if we assume that $d(y)$ is bounded, then we can also assume 
 WLOG that $0 \le d(y) \le 1$. 
 
@@ -280,12 +303,14 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 We define the discrete waiting time distribution $\psi^{(c)}(j\tau | x)$ 
 as a mixture of a "local" and a "nonlocal" component:
 \begin{align}
-\psi^{(c)}(j\tau | x) := d(x) \psi^{{(c)}}_{\rm loc}(j\tau | x) 
-+ (1-d(x)) \psi^{(c)}_{\rm nonloc}(j\tau|x), \quad j=1,2,\ldots
+\psi^{(c)}(j\tau | x) := \theta(x) \psi^{{(c)}}_{\rm loc}(j\tau | x) 
++ (1-\theta(x)) \psi^{(c)}_{\rm nonloc}(j\tau|x), \quad j=1,2,\ldots
 \label{eq:def-psi}
 \end{align}
+where, by definition, $0 \le d(x) \le 1$.
 The local part is simply deterministic, with all mass at $\tau$, that is 
-$\psi^{(c)}_{\rm loc}(\tau | x) = 1$. 
+$\psi^{(c)}_{\rm loc}(\tau | x) = 1$ and $\psi^{(c)}_{\rm loc}(k\tau | x) = 0$
+for $k=2, 3, \ldots$.
 The nonlocal part is the truncated, normalized and discretized
 Lévy measure: First, define the function
 $$
@@ -306,7 +331,8 @@ $1$ to $0$.
 We take this function to be the tail function of $\psi^{(c)}_{\rm nonloc}(w|x)$, 
 that is, 
 \begin{align}
-\psi^{(c)}_{\rm nonloc}(j\tau | x) = H^{(c)}((j-1)\tau | x) - H^{(c)}(j\tau | x). 
+\psi^{(c)}_{\rm nonloc}(j\tau | x) = H^{(c)}((j-1)\tau | x) - H^{(c)}(j\tau | x), 
+k = 1, 2, \ldots.
 \end{align}
 We then have $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
 strictly positive.
@@ -348,8 +374,8 @@ K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
 \end{align}
 Note that we evaluate the jump probabilities at the end $t+w$ of a waiting time,
 as is common for CTRWs.
-Th. 2.1 in @Straka17 specifies conditions on $K^{(c)}(z,w|x,t)$ which imply
-the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$, which we repeat
+Th. 2.1 in [@Straka17] specifies conditions on $K^{(c)}(z,w|x,t)$ which imply
+the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$ and which we repeat
 here for convenience:
 \begin{align} \label{eq:cond1}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
@@ -359,11 +385,11 @@ c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &
 c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
 \\ \label{eq:cond3}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= d(x)
+c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= \theta(x)
 \\
 \label{eq:cond4}
 \lim_{c \to \infty}
-c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
+c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) (1-\theta(x)) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
 We give calculations in the appendix which confirm that the above four
@@ -559,27 +585,42 @@ in @Angstmann2015a, if we choose $h_{i,j} = \Psi(j)$.
 
 # Examples {#sec:examples}
 
-Within this semi-Markov framework, we may now implement the above numeric scheme to calculate approximations of the densities of a variety of CTRW limits. The generality of the scheme provides a unified approach for calculating the densities of any CTRW limit. By allowing for various coefficients $a(y,t)$, $b(y,t)$, $d(y)$, waiting time distributions $\psi (\omega | y)$, spatially varying exponents $\beta (y)$ and various initial residence times (see [@Gill2016]) these limtis are able to model the underlying CTRW of a wide set of subdiffusive systems. 
-
-### Spatially varying exponent {-}
-
-For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the diffusivity we have $a(x) = T_0^{-\beta(x)}$ where $T_0$ is the time scale and waiting time distribution tail function $\Psi(x,t) = \frac{t^{-\beta(x)}}{\Gamma (1-\beta(x))}$. 
-
-For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure [fig:varyexp1] shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
+Within our unifying semi-Markov framework, we may approximate probability 
+distributions of a great variety of CTRW limits. 
+We study several examples. 
 
 
-```{r varyexp1, include=TRUE, echo=FALSE, message=FALSE, fig.cap="A medium which is more 'anomalous' to the left than to the right, see anomalous exponent (dashed line)."}
+## Continuous interface problem
+
+
+```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text. Other numeric parameters are $c = 100$, $\\chi = 1/10$ and $\\tau = 1/100$."}
 source("../R/varyExp-DTSM.R")
+T0 <- 1
 alpha <- function(x)
-  0.5 / (1 + exp(-x)) + 0.25
+  0.44 * exp(-x^2) + 0.3 + 0.45 / (1 + exp(-2 * x))
 nuTail <- function(x,t) {
   if (t <= 0)
     Inf
   else
     (t^(-alpha(x))  )/gamma(1-alpha(x))
 }
-out <- DTSM(nuTail = nuTail, snapshots = 2^(1:5), c = 36, d = function(x) 0) %>% 
-  rho_df() 
+a <- function(x,t) 
+  1 / T0^(alpha(x))
+b <- function(x,t) 
+  0.1 * dnorm(x, sd=0.2) / T0^(alpha(x))
+d <- function(x) 0
+
+snapshots <- 2^(-1:3)
+
+out <-
+  DTSM(
+    c = 400,
+    nuTail = nuTail,
+    a = a,
+    b = b,
+    d = d,
+    snapshots = T0 * snapshots
+  ) %>% rho_df()
 
 out %>% 
   gather(what, density,-x) %>%
@@ -594,80 +635,190 @@ out %>%
   theme(legend.title = element_blank())
 ```
 
-### Continuous interface {-}
+@Korabel2010 have studied a one-dimensional subdiffusive lattice with 
+exponent $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, where at the 
+interface ($x=0$) the waiting time is exponentially distributed. 
+Even if particles are biased to jump to the right at $x=0$ and thus 
+the net drift becomes positive, 
+in the long-time limit _all particles end up in the left half_. 
 
-In [Korabel2010], the authors modelled a subdiffusive system with a discontinuous exponent $\beta = 0.3$ for $y<0$ and $\beta = 0.75$ for $y>0$, while at the interface ($y=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with continuous $\beta (y) = 0.55e^{-y^2} + 0.15 + 0.5/(1+e^{-2y})$, noting that $\lim_{y\to -\infty} \beta (y) = 0.15$, $\lim_{y\to \infty} \beta (y) = 0.65$, while at the interface ($y=0$) the system is near-diffusive with $\beta = 0.95$. Figure [fig:varyexp2] shows the evolution of the density $P(y,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($y<0$) which has lower exponent $\beta$.
+Here we consider a continuous medium that mimics this setup with the
+coefficients $(\overline \nu(w|x), d(x), a(x,t), b(x))$ chosen as follows: 
+
+\begin{align*}
+\overline \nu(w|x) &= \frac{w^{-\alpha(x)}}{\Gamma(1-\alpha(x))} \text{ where }
+\alpha (x) = 0.45e^{-x^2} + 0.3 + 0.45/(1+e^{-2x}), 
+\\
+d(x) &\equiv 0, 
+\quad 
+a(x,t) \equiv 1, 
+\quad 
+b(x,t) = 0.1 * \phi(x | 0, 0.2)
+\end{align*}
+where $\phi(x | \mu, \sigma)$ denotes the probability density of the 
+Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
+Note that $\alpha(x,t)$ is chosen so that it approaches $0.3$ for large negative 
+$x$, $0.75$ for large positive x and remains just under $1$ near $x=0$. 
+
+Figure \ref{fig:interface} shows the evolution of the density $P(y,t)$ 
+with a delta function initial condition. 
+At small times we observe two peaks reflecting the trapping that occurs 
+either side of the interface. For late times we can see the aggregation of all 
+particles towards the left hand side ($y<0$) where trapping is stronger.
 
 
-```{r varyexp2, include=TRUE, message=FALSE, echo=FALSE, fig.cap="An interface problem."}
-#Parameters
-alpha <- function(x)
-  0.55 * exp(-x^2) + 0.15 + 0.5 / (1 + exp(-2 * x))
-nuTail <- function(x,t) {
-  if (t <= 0)
-    Inf
-  else 
-    (t^(-alpha(x))  )/gamma(1-alpha(x)) 
+@Straka17 shows that changing time units from $T_0 = 1$ to $T_0 = 2$ results 
+in the the updated diffusivity and drift coefficients 
+\begin{align*}
+a_{\beta(y)}(x,t) = \frac{a(x,t)}{T_0^{-\alpha(x)}}, 
+\quad 
+b_{\beta(y)}(x,t) = \frac{b(x,t)}{T_0^{-\alpha(x)}},
+\end{align*}
+leading to spatially inhomogeneous temporal scaling. 
+We confirm this by computing probability densities for the parameter tuple
+$(\overline \nu(w|x), d(x), a_{\alpha(x)}(x,t), b_{\alpha(x)}(x))$, at the 
+timestamps multiplied by $T_0 = 2$, and plotting the differences
+(Figure \ref{fig:difference}). 
+Relative differences are near 1\%, and remain stable after 8 units of time,
+indicating that indeed the same densities are calculated in both cases. 
+
+
+```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of time scale $T_0 = 1$ and $T_0 = 2$."}
+T0 <- 2
+
+out2 <-
+  DTSM(
+    c = 400,
+    nuTail = nuTail,
+    a = a,
+    b = b,
+    d = d,
+    snapshots = T0 * snapshots
+  ) %>% rho_df()
+diff_df <- out2[-1] - out[-1]
+names(diff_df) <- c("t1", "t2", "t3", "t4", "t5")
+diff_df %>% add_column(x=out$x) %>% gather(timestamp, difference, -x) %>%
+  ggplot(aes(x=x, y=difference, col=timestamp)) + geom_line()
+```
+
+## Temporal drift $d(x)$
+
+CTRW limits with positive temporal drift $d(x)$ as per representation 
+\eqref{eq:dY}--\eqref{eq:dZ} have been studied by @StrakaThesis:
+In the case where $Z_u$ is a $\beta$ stable Lévy flight, 
+$Z_u$ grows superlinearly at the rate $u^{1/\beta}$ both in the short time 
+limit $t \downarrow 0$ and the long time limit $t \uparrow \infty$. 
+Accordingly, the inverse stable subordinator 
+$E(t)$ in \eqref{eq:CTRWlimit} grows as $\propto t^\beta$, 
+also both in the short time and long time limit.
+Adding a drift to $Z_u$, e.g. $d(x) \equiv d > 0$, means that $Z_u$ now grows 
+linearly $\propto d\,u$ at short times.
+Accordingly, its inverse $E(t)$ also grows linearly as $\propto t/d$ at short times.
+The growth behaviour at late times of $Z_u$ and $E(t)$ remains dominated by 
+large jumps resp. long rests, and remains $\propto u^{1/\beta}$ resp. $\propto t^\beta$.
+Hence the addition of the drift $d > 0$ means that the slope of $E(t)$ is no 
+longer infinite, and thus the speed of $E(t)$ is tempered at very short times. 
+Figure \ref{fig:temporal-drift} illustrates the effect of increasing the 
+temporal drift. As can be seen, the jump component of $Z_u$ becomes less 
+pronounced as the temporal drift increases, increasing resemblance to a 
+Gaussian process. Figure \ref{fig:varying-temporal-drift} shows anomalous diffusion 
+with exponent $0.7$ with spatially varying temporal drift $d(x)$. Particles accumulate 
+in patches of low mobility, corresponding to high $d(x)$. 
+
+```{r temporal-drift, echo=FALSE, message=FALSE, fig.cap="\\label{fig:temporal-drift}Increasing temporal drift $d(x)$ decreases the speed of the diffusion and increases resemblence to a standard Gaussian process. Parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x)=w^{-0.7}/\\Gamma(1-0.7), c=100, \\tau = 1/100, \\chi = 1/10$."}
+d_value_to_df <- function(d_value){
+  out <-
+    DTSM(
+      snapshots = 5,
+      a = function(x, t)
+      0.8,
+      b = function(x, t)
+      0,
+      d = function(x)
+      d_value
+    ) %>%
+    rho_df()
+  names(out) <- c("x", "density")
+  out %>% add_column(d = paste0(d_value))
 }
-
-out <- DTSM(nuTail = nuTail, snapshots = 2^(-1:4), c = 225, d = function(x) 0) %>% rho_df()
-
-out %>% 
-  gather(what, density,-x) %>%
-  ggplot(aes(x = x)) +
-  geom_line(aes(y = density, col = what)) + 
-  geom_line(
-  data = out %>% mutate(alpha = alpha(x)) %>% select(x, alpha) %>%
-    add_column(what = "alpha"),
-    aes(x = x, y = alpha, col = "alpha"),
-    linetype = 2
-  ) + 
-  theme(legend.title = element_blank())
-
+plyr::ldply(2^(-2:2), d_value_to_df) %>% 
+  ggplot(aes(x=x, y=density, col=d)) + geom_line()
 ```
 
 
-### Varying mixture {-}
+
+```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7), c = 900, \\tau = 1/900, \\chi = 1/30$."}
+d <- function(x,t){
+  10 * (sin(2*pi*x))^2
+}
+DTSM(xrange = c(-1,1), c = 30^2, d = d, snapshots = 4^(-1:1)) %>% rho_df() %>% gather(timestamp, density, -x) %>%
+  ggplot(aes(x=x, y=density, col=timestamp)) + geom_line()
+```
+
+
+
+## Variably distributed fractional order
+
+Anomalous diffusion with _distributed order_ assumes a mixing probability distribution 
+$p(\beta)\,d\beta$ on the interval $(0,1]$, and the 
 
 For constant $a$, $b$ and $d$ with $d \geq 0$ and $\nu(\omega|y) \equiv \nu(\omega)$, it can be shown that [equation 1.3] can be written as a special case of a Distributed order FFPE with a distribution over the orders of $\beta$ and 1 [equation (3.8) in JphysA paper]. This leads to a mixture of orders with the smaller one $\beta$ dominating the long-time behaviour. The behaviour of such a process is similar to that of a CTRW with two different underlying waiting time densities $\psi_1(t)$ and $\psi_2(t)$ [Sandev paper].
 
 Here we are now able to consider a qualitatively similar mixed type fractional diffusion by defining $\bar \nu(\omega|y) = p(y) \bar \nu_{\beta_1}(\omega) + (1-p(y)) \bar \nu_{\beta_2}(\omega)$ where $y, p(y) \in [0,1]$. The weight function $p(y)$ allows us  to vary the bifractional mixture in space. Figure [fig:varyingmixture] shows the resulting PDF $P(y,t)$ when the weight function follows a logistic function $p(y) = 1/(1+e^{-10y + 5})$ on $y\in[0,1]$ and initial condition is $P(dy,0) = \delta_0 (dy)$. Note that as $t \to \infty$, $P(y,t) \to \delta(y-1)$ (see [Fedotov/Falconer]), hence [fig:varyingmixture] represents the intermediate evolution of the density, the speed of which is controlled by parameters $\beta_1$, $\beta_2$ and $p(y)$.
 
-```{r varymixture, include=TRUE, echo=FALSE, message=FALSE}
-#Parameters
-alpha <- function(x)
-  0.55 * exp(-x^2) + 0.15 + 0.5 / (1 + exp(-2 * x))
-Psi <- function(x,t) {
+```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.cap="\\label{fig:varying-mixture}Distributed order anomalous diffusion with spatially varying mixture. The mixture has two modes, $\\beta_1 = 0.7$ (left) and $\\beta_2 = 0.3$ (right). The mixing is according to $(p(x), 1-p(x))$, where $p(x) = 1 / (1 + \\exp(-2x)).$"}
+p <- function(x)
+  1 / (1 + exp(-2 * x))
+nuTail1 <- function(x,t) {
   if (t <= 0)
     Inf
   else
-    (t^(-alpha(x))  )/gamma(1-alpha(x))
+    (t^(-0.3)  )/gamma(1-0.3)
 }
-
-out <- DTSM(Psi = Psi, xrange = c(-1,1), snapshots = 2^(1:5), c = 25)
-plot_DTSM_output(out)
-```
-
-### Spatially varying Tempering {-}
-
-The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
-
-```{r varytempering, include=TRUE, echo=FALSE, message=FALSE}
-#Parameters
-alpha <- function(x)
-  0.5 / (1 + exp(-x)) + 0.25
-theta <- function(x)
-  1 / (1 + exp(0.5 * x))
-Psi <- function(x,t) {
+nuTail2 <- function(x,t) {
   if (t <= 0)
     Inf
   else
-    (t^(-alpha(x)) * exp(-t*theta(x)) )/gamma(1-alpha(x))
+    (t^(-0.7)  )/gamma(1-0.7)
 }
+mixedTail <- function(x, t)
+  p(x) * nuTail1(x, t) + (1 - p(x)) * nuTail2(x, t)
 
-out <- DTSM(Psi = Psi, xrange = c(-1,1), snapshots = 2^(1:5), c = 25)
-plot_DTSM_output(out)
+DTSM(nuTail = mixedTail, snapshots = 2^(1:5)) %>%
+  rho_df() %>%
+  gather(time, density, -x) %>%
+  ggplot(aes(x=x, y=density, col=time)) + geom_line()
 ```
+
+
+## Inverse tempered stable subordinator
+
+```{r, message=FALSE, echo=FALSE, fig.cap="Probability densities of the tempered inverse stable subordinator."}
+nuTail <- function(x,w){
+  beta <- 0.7
+  gam <- 1
+  (w ^ (-beta) * exp(-gam * w) - gam * pracma::gammainc(w, 1 - beta)) / gamma(1-beta)
+}
+DTSM(
+  c = 20 ^ 2,
+  nuTail = function(x,t){
+    if (t <= 0)
+      return(Inf)
+    out <- t^(-0.7) / gamma(1-0.7)
+    out <- out * exp(-0.1 * t)
+  },
+  xrange = c(0, 3),
+  a = function(x, t)
+  0,
+  b = function(x, t)
+  2,
+  initial_condition = "left"
+  ) %>%
+  rho_df() %>%
+  gather(time, density,-x) %>%
+  ggplot(aes(x = x, y = density, col = time)) + geom_line()
+```
+
 
 
 
@@ -704,12 +855,12 @@ neighbourhood of $0$.
 
 
 _Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability
-distribution on the positive numbers with a tail function 
+distribution on the positive numbers with tail function 
 $$
-\Psi^{(c)}(w|x) = d(x) \mathbf 1\{w \le \tau\}  +(1-d(x)) H^{(c)}(w_\tau|x)
+\Psi^{(c)}(w|x) = d(x) \mathbf 1\{w \le \tau\}  + (1-d(x)) H^{(c)}(w_\tau|x)
 $$ 
 which for all $w>0$ satisfies $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$
-(recall that $\tau\downarrow 0$).
+(recall that $\tau = 1/c \downarrow 0$).
 For \eqref{eq:psi-non-local}, we first note that
 \begin{align} \label{eq:tail-to-zero}
 c \Psi^{(c)}(w|y)
@@ -756,8 +907,8 @@ use Lebesgue-Stieltjes integration by parts:
 Multiplying with $c$ and letting $c \to \infty$, the right hand side 
 converges to 
 $$
--\varepsilon \overline \nu(\varepsilon|x) 
-+ \int_0^\varepsilon \overline \nu(w|x)\,dw
+-\frac{\varepsilon \overline \nu(\varepsilon|x)}{1-d(x)}
++ \int_0^\varepsilon \frac{\overline \nu(\varepsilon|x)}{1-d(x)}\,dw
 $$
 where both terms are of order 
 $\mathcal O\left(\varepsilon^{1-\beta(x)} / \Gamma(1-\beta(x))\right)$
