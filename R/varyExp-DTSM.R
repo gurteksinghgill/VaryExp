@@ -79,14 +79,18 @@ jump_probs <- function(x, t, a_trans, b_trans) {
   m <- length(x)
   chi <- diff(range(x)) / (m-1)
   a_vec <- sapply(x, function(x) a_trans(x,t))
-  if (!all(a_vec > 0))
-    stop("Diffusivity needs to be positive.")
+  if (!all(a_vec >= 0))
+    stop("Diffusivity can't be negative.")
   b_vec <- sapply(x, function(x) b_trans(x,t))
   if (!all(chi * abs(b_vec) <= a_vec))
-    stop("Some jump probabilities are negative. Fix by increasing c.")
-  left  <- (a_vec - chi * b_vec) / 2
-  right <- (a_vec + chi * b_vec) / 2
-  center <- 1 - a_vec
+    message("Warning: some jump probabilities are being truncated.")
+  left  <- ((a_vec - chi * b_vec) / 2) %>% 
+    sapply(function(x) max(0,x)) %>%
+    sapply(function(x) min(1,x))
+  right <- ((a_vec + chi * b_vec) / 2) %>% 
+    sapply(function(x) max(0,x)) %>%
+    sapply(function(x) min(1,x))
+  center <- 1 - left - right
   # boundary conditions left end
   center[1] <- center[1] + left[1]
   left[1] <- 0
