@@ -32,7 +32,7 @@ init_DTRM <- function(xrange,
                       chi,
                       tau,
                       nuTail,
-                      d) {
+                      theta) {
   # set up space-age-lattice
   m <- round((xrange[2] - xrange[1]) / chi)
   if (m %% 2 == 1)
@@ -40,8 +40,6 @@ init_DTRM <- function(xrange,
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
-  if (!all(d(x) >= 0) || !all(d(x) <= 1))
-    stop("Temporal drift needs to satisfy 0 <= d(x) <= 1.")
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
   # Put initial mass on center two lattice points with age 0:
@@ -54,9 +52,9 @@ init_DTRM <- function(xrange,
   Psi_nonloc <- function(x, t)
     min(1, nuTail(x, t) / c)
   age <- (0:n) * tau
-  h <- (1-d(x)) * outer(x, age, Vectorize(Psi_nonloc)) # see paper for definition of h
+  h <- (1-theta(x)) * outer(x, age, Vectorize(Psi_nonloc)) # see paper for definition of h
   # now add the local part of psi:
-  h[ , 1] <- h[ , 1] + d(x)
+  h[ , 1] <- 1
   
   if (!all(h >= 0))
     stop("Survival function can't be negative.")
@@ -77,13 +75,13 @@ init_DTRM <- function(xrange,
 # returns: 
 #   a list with three items, each a vector of same length as x, 
 #   for the probabilities to jump left, right and self-jumps
-jump_probs <- function(x, t, a, b) {
+jump_probs <- function(x, t, a_trans, b_trans) {
   m <- length(x)
   chi <- diff(range(x)) / (m-1)
-  a_vec <- sapply(x, function(x) a(x,t))
+  a_vec <- sapply(x, function(x) a_trans(x,t))
   if (!all(a_vec > 0))
     stop("Diffusivity needs to be positive.")
-  b_vec <- sapply(x, function(x) b(x,t))
+  b_vec <- sapply(x, function(x) b_trans(x,t))
   if (!all(chi * abs(b_vec) <= a_vec))
     stop("Some jump probabilities are negative. Fix by increasing c.")
   left  <- (a_vec - chi * b_vec) / 2
@@ -149,6 +147,14 @@ DTSM <- function(xrange = c(-2, 2),
                  b = default_b,
                  nuTail = default_nuTail,
                  d = default_d) {
+  # transform parameters
+  theta <- function(x)
+    d(x) / (1 + d(x))
+  a_trans <- function(x,t)
+    (1-theta(x)) * a(x,t)
+  b_trans <- function(x,t)
+    (1-theta(x)) * b(x,t)
+  
   foo <-
     init_DTRM(
       xrange = xrange,
@@ -157,7 +163,7 @@ DTSM <- function(xrange = c(-2, 2),
       chi = chi,
       tau = tau,
       nuTail = nuTail,
-      d = d
+      theta = theta
     )
   xi   <- foo$xi0
   Sprob <- foo$survival_probs
@@ -177,7 +183,7 @@ DTSM <- function(xrange = c(-2, 2),
       counter <- counter + 1
       if (counter %% 1000 == 0)
         message("Finished ", counter, " iterations.")
-      Jprob <- jump_probs(x = x, t = t, a = a, b = b)
+      Jprob <- jump_probs(x = x, t = t, a_trans = a_trans, b_trans = b_trans)
       xi <- step_xi(xi = xi,
                     Sprob = Sprob,
                     Jprob = Jprob)
