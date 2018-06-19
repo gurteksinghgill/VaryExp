@@ -28,13 +28,14 @@ default_d <- function(x)
 #   * an (m,n) matrix of the CTRW states, with the first dimension
 #     corresponding to space and the second to age
 #   * an (m,n) matrix of survival probabilities
-init_delta_middle <- function(xrange,
+init_delta <- function(xrange,
                       age_max,
                       c,
                       chi,
                       tau,
                       nuTail,
-                      theta) {
+                      theta, 
+                      where = c("centre", "left")) {
   # set up space-age-lattice
   m <- round((xrange[2] - xrange[1]) / chi)
   if (m %% 2 == 0)
@@ -44,9 +45,15 @@ init_delta_middle <- function(xrange,
            length.out = m)
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
-  # Put initial mass on center two lattice points with age 0:
-  midpoint_index <- (m+1)/2
-  xi0[midpoint_index, 1]  <- 1 / chi
+  where <- match.arg(where)
+  if (where == "centre") {
+    # Put initial mass on center two lattice points with age 0:
+    midpoint_index <- (m+1)/2
+    xi0[midpoint_index, 1]  <- 1 / chi
+  }
+  if (where == "left") {
+    xi0[1, 1] <- 1 / chi
+  }
   
   # set up survival probability matrix
   # begin with nonlocal part:
@@ -151,7 +158,8 @@ DTSM <- function(xrange = c(-2, 2),
                  a = default_a,
                  b = default_b,
                  nuTail = default_nuTail,
-                 d = default_d) {
+                 d = default_d, 
+                 initial_condition = "centre") {
   # transform parameters
   theta <- function(x)
     d(x) / (1 + d(x))
@@ -161,14 +169,15 @@ DTSM <- function(xrange = c(-2, 2),
     (1-theta(x)) * b(x,t)
   
   foo <-
-    init_delta_middle(
+    init_delta(
       xrange = xrange,
       age_max = age_max,
       c = c,
       chi = chi,
       tau = tau,
       nuTail = nuTail,
-      theta = theta
+      theta = theta, 
+      where = initial_condition
     )
   xi   <- foo$xi0
   Sprob <- foo$survival_probs
