@@ -14,6 +14,8 @@ default_b <- function(x,t)
 default_d <- function(x) 
   0
 
+# Creates a delta function initial condition, with "delta function" located 
+# in the center lattice point.
 # arguments: 
 #   xrange: a pair of numbers (xmin, xmax)
 #   age_max: cutoff of age lattice
@@ -26,7 +28,7 @@ default_d <- function(x)
 #   * an (m,n) matrix of the CTRW states, with the first dimension
 #     corresponding to space and the second to age
 #   * an (m,n) matrix of survival probabilities
-init_DTRM <- function(xrange,
+init_delta_middle <- function(xrange,
                       age_max,
                       c,
                       chi,
@@ -35,17 +37,16 @@ init_DTRM <- function(xrange,
                       theta) {
   # set up space-age-lattice
   m <- round((xrange[2] - xrange[1]) / chi)
-  if (m %% 2 == 1)
-    m <- m+1 # to make m even
+  if (m %% 2 == 0)
+    m <- m+1 # to make m odd
   x <- seq(from = xrange[1],
            to = xrange[2],
            length.out = m)
   n <- round(age_max / tau)
   xi0 <- matrix(0, m, n)
   # Put initial mass on center two lattice points with age 0:
-  midpoint_index <- m/2
-  xi0[midpoint_index, 1]  <- 0.5 / chi
-  xi0[midpoint_index+1,1] <- 0.5 / chi
+  midpoint_index <- (m+1)/2
+  xi0[midpoint_index, 1]  <- 1 / chi
   
   # set up survival probability matrix
   # begin with nonlocal part:
@@ -160,7 +161,7 @@ DTSM <- function(xrange = c(-2, 2),
     (1-theta(x)) * b(x,t)
   
   foo <-
-    init_DTRM(
+    init_delta_middle(
       xrange = xrange,
       age_max = age_max,
       c = c,
