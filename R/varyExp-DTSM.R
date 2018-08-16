@@ -165,8 +165,8 @@ DTSM <- function(xrange = c(-2, 2),
                  d = default_d, 
                  initial_condition = "centre") {
   # transform parameters
-  theta <- function(x)
-    d(x) / (1 + d(x))
+  theta <- Vectorize(function(x)
+    d(x) / (1 + d(x)))
   a_trans <- function(x,t)
     (1-theta(x)) * a(x,t)
   b_trans <- function(x,t)
