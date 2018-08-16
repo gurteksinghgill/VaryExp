@@ -114,7 +114,9 @@ In the domain of _inhomogeneously anomalous_ diffusion, several authors
 have developed computational methods for _variable order_ fractional Fokker--Planck Equations, but only the equation studied by @Chen2010
 is consistent with a CTRW scaling limit representation [@Straka17].
 
-The algorithm we introduce in this paper computes solutions to all
+The algorithm we introduce in this paper
+is an extension of the Semi-Markov approach by @Gill2016. 
+It computes solutions to all
 Fokker--Planck equations of type \eqref{eq:FFPE}
 with spatially varying memory.  Its only requirement is that the
 coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
@@ -280,6 +282,18 @@ Finally, we add the technical but non-restrictive condition
 for some bounded function $G(y)$, 
 which prevents the Levy measure from blowing up in regions where 
 $\beta(y) \uparrow 1$, see Lemma \ref{lem:psi}.
+
+
+### Remark {-}
+
+So-called Lipschitz and Growth conditions on the coefficients 
+$\left(a(x,t), b(x,t), d(x), \overline \nu(w, x)\right)$
+guarantee the existence of the Langevin process $(Y_u, Z_u)$ 
+[@Applebaum, Chapter 6].
+These entail continuity of the parameters. 
+It is generally difficult to ensure existence of $(Y_u, Z_u)$ without 
+these conditions. For an approach of constructing the CTRW limit $X(t)$ 
+without this condition, see @Orsingher2018.
 
 
 # Discrete Langevin Dynamics
@@ -448,7 +462,8 @@ is defined by the jump kernel \eqref{eq:K} as follows: first, a waiting
 time is drawn from the distribution $\psi^{(c)}(w|x)$; then a jump left or right or
 a self-jump is drawn from the probabilities $\ell^{(c)}(x,t+w)$, $r^{(c)}(x,t+w)$
 and $n(x,t+w)$.
-The Semi-Markov approach embeds $X^{(c)}(t)$ into a Markov process as follows:
+The Semi-Markov approach embeds $X^{(c)}(t)$ into a Markov process
+[@Meerschaert2014]:
 Define the _age_ of a walker as the time that has passed since he last arrived
 at his current location. In each timestep $\tau$, either the waiting time has
 not expired yet, in which case no jump occurs and age is increased by $\tau$;
@@ -607,7 +622,7 @@ nuTail <- function(x,t) {
     (t^(-alpha(x))  )/gamma(1-alpha(x))
 }
 a <- function(x,t) 
-  1 / T0^(alpha(x))
+  0.9 / T0^(alpha(x))
 b <- function(x,t) 
   0.1 * dnorm(x, sd=0.2) / T0^(alpha(x))
 d <- function(x) 0
@@ -667,7 +682,8 @@ Figure \ref{fig:interface} shows the evolution of the density $P(y,t)$
 with a delta function initial condition. 
 At small times we observe two peaks reflecting the trapping that occurs 
 either side of the interface. For late times, one begins to see the aggregation of all 
-particles towards the left hand side ($x<0$) where trapping is stronger.
+particles towards the left hand side ($x<0$) where trapping is stronger
+[@Savov2018; @Fedotov2012].
 
 
 @Straka17 shows that changing time units from $T_0 = 1$ to $T_0 = 2$ results 
@@ -687,7 +703,7 @@ and remain stable after 8 units of time,
 indicating that indeed the same densities are calculated in both cases. 
 
 
-```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of time scale $T_0 = 1$ and $T_0 = 2$."}
+```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of  time scale $T_0 = 1$ and $T_0 = 2$."}
 T0 <- 2
 
 out2 <-
@@ -703,7 +719,7 @@ diff_df <- out2[-1] - out[-1]
 names(diff_df) <- c("t1", "t2", "t3", "t4", "t5")
 diff_df %>% add_column(x=out$x) %>% gather(timestamp, difference, -x) %>%
   ggplot(aes(x=x, y=difference, col=timestamp)) + geom_line() + 
-  ggtitle("Comparison at two different time scales")
+  ggtitle("Difference of solutions at two different time scales")
 ```
 
 ## Temporal drift $d(x)$
@@ -927,6 +943,8 @@ Subordination is a widely used method to simulate paths of CTRW limits,
 see e.g. [@invSubord] for an overview. 
 @Alrawashdeh2017 study the "inverse tempered stable subordinator", i.e. the 
 level crossing time for the _tempered_ stable Levy flight. 
+This process is an important tool for the study of "tempered subdiffusion", 
+see e.g. @Gajda2010.
 Using our algorithm, we may compute probability densities for _any_ inverse 
 subordinator $E(t)$, defined as the level crossing time of any strictly 
 increasing Levy flight. 
@@ -962,6 +980,41 @@ then becomes an upper bound $E(t) < t/d$ for the inverse subordinator.
 
 
 
+# Conclusion
+
+We have explored the use of an algorithm which is based on the Semi-Markov
+property of CTRW limits. 
+To achieve a concise and general representation of CTRW limits, we have 
+identified CTRW limits with a bivariate Langevin process, which in turn is 
+defined via a coefficient tuple $(a(x,t), b(x,t), d(x), \overline \nu(w|x))$. 
+Given any such tuple, we can compute probability densities of the CTRW limit 
+at any given time. 
+
+The main novel settings to which our algorithm applies are: 
+
+* Spatially varying exponents: we have explored two variants of an interface 
+  problem, with spatially varying anomalous exponent and spatially varying 
+  mixture of two anomalous exponents. 
+* Temporal drift: a drift added to the Levy flight $Z_u$ translates into 
+  a "speed limit" for the time evolution $E(t)$, a phenomenon which changes 
+  the behaviour at short times of CTRW limits and which is seemingly unknown
+  in the statistical physics literature. 
+* Inverse subordinators: these are main building blocks for anomalous diffusion 
+  problems, and our algorithm computes their densities in great generality. 
+  
+Contrary to popular knowledge, Semi-Markov processes 
+are not necessarily discontinuous piecewise constant processes 
+with state-dependent holding time distributions. 
+Semi-Markov processes include CTRW limits (with continuous sample trajectories), 
+an idea which we have exploited in this paper. 
+They also include _coupled_ CTRW limits [@StrakaHenry] and, 
+in a wider sense, Levy walks [@Magdziarz2015]. 
+The main idea from this paper, i.e.
+leveraging the Semi-Markov property to compute probability densities, 
+can also be applied to these types of processes, 
+which we deem an interesting future extension of the present work.
+
+
 ## Acknowledgements {-}
 
 Peter Straka was supported by the Australian Research Council 
@@ -970,6 +1023,7 @@ The authors thank Christopher Angstmann, Bruce Henry and James Nichols for
 helpful discussions on discrete time random walks. 
 
 
+# Appendix {-}
 
 \appendix
 
