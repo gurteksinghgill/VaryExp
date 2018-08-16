@@ -1023,6 +1023,14 @@ The authors thank Christopher Angstmann, Bruce Henry and James Nichols for
 helpful discussions on discrete time random walks. 
 
 
+## Reproducibility {-}
+
+All computations and plots of this paper were made 
+using the `R` language [@R] with the `rmarkdown` [@rmarkdown] and `rticles` 
+[@rticles] packages. 
+All code is openly available at <https://github.com/strakaps/VaryExp>. 
+
+
 # Appendix {-}
 
 \appendix
