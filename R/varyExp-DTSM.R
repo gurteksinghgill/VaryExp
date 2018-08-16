@@ -94,8 +94,8 @@ jump_probs <- function(x, t, a_trans, b_trans) {
   if (!all(a_vec >= 0))
     stop("Diffusivity can't be negative.")
   b_vec <- sapply(x, function(x) b_trans(x,t))
-  if (!all(chi * abs(b_vec) <= a_vec))
-    message("Warning: some jump probabilities are being truncated.")
+  #if (!all(chi * abs(b_vec) <= a_vec))
+  #  message("Warning: some jump probabilities are being truncated.")
   left  <- ((a_vec - chi * b_vec) / 2) %>% 
     sapply(function(x) max(0,x)) %>%
     sapply(function(x) min(1,x))
