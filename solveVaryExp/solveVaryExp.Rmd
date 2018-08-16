@@ -1,7 +1,6 @@
 ---
 title: |
-  A Universal Algorithm for Continuum Limit Distributions of Continuous
-  Time Random Walks
+  A Universal Algorithm for Continuous Time Random Walks Limit Distributions
 author:
   - name: Gurtek Gill
     email: rickygill01@gmail.com
@@ -14,25 +13,9 @@ address:
   - code: UNSW Sydney
     address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
 abstract: |
-  We propose a universal "Semi-Markov algorithm" for the computation of
-  probability distributions of Continuous Time Random Walks (CTRWs) and their
-  continuum limits.
-  The algorithm is "universal", in the sense that it applies to any CTRW with 
-  Any CTRW continuum limit
-  can be mapped to a bivariate Langevin equation which tracks the cumulative sum
-  of jumps and waiting times, and given the coefficients of this Langevin
-  equation, the algorithm will compute the desired probability distributions.
-  Besides subdiffusion with space- and time-dependent drift, this approach
-  covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
-  tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
-  order where the mixture can vary in space.
-  Our Semi-Markov algorithm generalizes the recent
-  "Discrete Time Random Walk" algorithm, and shares the same properties:
-  it is consistent, conserves mass, generates strictly non-negative solutions,
-  and has the same computational complexity.
-  To illustrate applicability, we set up an interface problem, where two
-  subdiffusive media with different anomalous exponents meet, and compute the
-  evolution of probability densities at the interface.
+  In this article, we generalize the recent Discrete Time Random Walk (DTRW) algorithm, which was introduced for the computation of probability densities of fractional diffusion.  Although it has the same computational complexity and shares the same desirable features (consistency, conservation of mass, strictly non-negative solutions), it applies to virtually every conceivable Continuous Time Random Walk (CTRW) limit process, which we define broadly as the limit of a sequence of jump processes with renewals at every jump. Our only restrictive assumption is the boundedness and continuity of coefficients of the underlying Langevin proceesses. 
+  
+  We highlight three main novel use-cases: i) CTRWs with spatially varying waiting times, e.g. for interface problems between two differently anomalous media; ii) (varying) temporal drift, which limits the short-time speed of subdiffusive processes; and iii) the computation of probability densities for generalized inverse subordinators. 
 journal: "An Elsevier Journal"
 date: "`r Sys.Date()`"
 keywords: Continuous Time Random Walk, Fokker-Planck Equation, Semi-Markov process, Fractional Diffusion
@@ -122,7 +105,7 @@ Fokker--Planck equations of type \eqref{eq:FFPE}
 with spatially varying memory.  Its only requirement is that the
 coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
 which tracks the location resp. current time,
-can be evaluated numerically.
+are bounded and continuous and can be evaluated numerically.
 
 Similarly to the Discrete Time Random Walk (DTRW) method
 [@Angstmann2015a; @Angstmann2016a], our algorithm calculates the
@@ -136,23 +119,27 @@ However, we do not rely on discrete Z-transforms, which means that
 our method remains tractable not just for Shibuya-distributed waiting
 times.
 
-In the rest of this paper:
-We give a short account of bivariate Langevin dynamics
-and their relevance for this article in Section 2.
-In Section 3 we construct a sequence of DTRWs which converges to
-a CTRW continuum limit process, represented by a general bivariate
-Langevin equation $(Y_u, Z_u)$.
-The stochastic process convergence guarantees the convergence of
-probability distributions to the solutions $P(y,t)$ of
-\eqref{eq:FFPE}, which translates into the consistency of the algorithm.
-In Section 4 we calculate the probability distributions of the DTRW.
-Because of the Semi-Markov property, this can be done via genearlized
-master equations in a higher dimensional state space which tracks the
-time since the last jump.
-In Section 5 we consider an interface problem, where the anomalous
-exponent interpolates continuously between two different anomalous
-exponents for each half axis. Section 6 concludes.
+This paper is organized as follows: 
 
+Section 2: 
+: We give a short account of bivariate Langevin dynamics
+  characterizing CTRW limit processes.
+  
+Section 3: 
+: We construct a sequence of DTRWs which converges to
+  a CTRW continuum limit process, represented by a general bivariate
+  Langevin equation $(Y_u, Z_u)$. 
+  
+Section 4: 
+: We calculate the probability distributions of the DTRW 
+  via genearlized master equations in an extended tate space.
+  
+Section 5: 
+: We study three novel use-cases, namely an interface problem, 
+  spatially varying temporal drift, and inverse subordinators.  
+
+Section 6: 
+: concludes.
 
 
 # Stochastic solution to Fokker-Planck equation with memory
@@ -293,7 +280,7 @@ guarantee the existence of the Langevin process $(Y_u, Z_u)$
 [@Applebaum, Chapter 6].
 These entail continuity of the parameters. 
 It is generally difficult to ensure existence of $(Y_u, Z_u)$ without 
-these conditions. For an approach of constructing the CTRW limit $X(t)$ 
+these conditions. For a recent approach of constructing the CTRW limit $X(t)$ 
 without this condition, see @Orsingher2018.
 
 
@@ -611,7 +598,7 @@ We study several examples.
 ## Continuous interface problem
 
 
-```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text, and $c = 400$."}
+```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text, and $c = 400$."}
 source("../R/varyExp-DTSM.R")
 T0 <- 1
 alpha <- function(x)
@@ -704,7 +691,7 @@ and remain stable after 8 units of time,
 indicating that indeed the same densities are calculated in both cases. 
 
 
-```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of  time scale $T_0 = 1$ and $T_0 = 2$."}
+```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of  time scale $T_0 = 1$ and $T_0 = 2$."}
 T0 <- 2
 
 out2 <-
@@ -743,11 +730,12 @@ longer infinite, and thus the speed of $E(t)$ is tempered at very short times.
 Figure \ref{fig:temporal-drift} illustrates the effect of increasing the 
 temporal drift. As can be seen, the jump component of $Z_u$ becomes less 
 pronounced as the temporal drift increases, increasing resemblance to a 
-Gaussian process. Figure \ref{fig:varying-temporal-drift} shows anomalous diffusion 
+Gaussian process and slowing down the dynamics. 
+Figure \ref{fig:varying-temporal-drift} shows anomalous diffusion 
 with exponent $0.7$ with spatially varying temporal drift $d(x)$. Particles accumulate 
 in patches of low mobility, corresponding to high $d(x)$. 
 
-```{r temporal-drift, echo=FALSE, message=FALSE, fig.cap="\\label{fig:temporal-drift}Increasing temporal drift $d(x)$ decreases the speed of the diffusion and increases resemblence to a standard Gaussian process. Parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x)=w^{-0.7}/\\Gamma(1-0.7), c=100, \\tau = 1/100, \\chi = 1/10$."}
+```{r temporal-drift, echo=FALSE, message=FALSE, fig.height=4, fig.cap="\\label{fig:temporal-drift}Increasing temporal drift $d(x)$ decreases the speed of the diffusion and increases resemblence to a standard Gaussian process. Parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x)=w^{-0.7}/\\Gamma(1-0.7), c=100, \\tau = 1/100, \\chi = 1/10$."}
 d_value_to_df <- function(d_value){
   out <-
     DTSM(
@@ -770,7 +758,7 @@ plyr::ldply(2^(-2:2), d_value_to_df) %>%
 
 
 
-```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin^2(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.9$, $b(x,t) = 0$, $\\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7)$, $c = 900$."}
+```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin^2(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.9$, $b(x,t) = 0$, $\\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7)$, $c = 900$."}
 d <- function(x,t){
   10 * (sin(2*pi*x))^2
 }
@@ -830,7 +818,7 @@ The evolution of a system with point mass initial condition at the interface
 $y=0$ is illustrated in Figure \ref{fig:varying-mixture}.
 
 
-```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.cap="\\label{fig:varying-mixture}A variable mixture of subdiffusion ($\\beta_1 = 0.7$) and diffusion ($\\beta_2 = 1$). The two weights add to $1$, and the weight for $\\beta_2$ equals the logistic function with scale $1/2$, increasing from $0$ on the far left to $1$ on the far right."}
+```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.height=4, fig.cap="\\label{fig:varying-mixture}A variable mixture of subdiffusion ($\\beta_1 = 0.7$) and diffusion ($\\beta_2 = 1$). The two weights add to $1$, and the weight for $\\beta_2$ equals the logistic function with scale $1/2$, increasing from $0$ on the far left to $1$ on the far right."}
 p <- function(x)
   1 / (1 + exp(-2 * x))
 nuTail <- function(x,t) {
@@ -850,7 +838,7 @@ DTSM(nuTail = nuTail, d = p, snapshots = 2^(1:5)) %>%
 
 ## Inverse subordinators
 
-```{r invSubordinators, message=FALSE, echo=FALSE, warning=FALSE, fig.cap="\\label{fig:invSubordinators}Probability densities for three different types of inverse subordinators, evaluated at time $t = 1$, with $c=900$."}
+```{r invSubordinators, message=FALSE, echo=FALSE, warning=FALSE, fig.height=4, fig.cap="\\label{fig:invSubordinators}Probability densities for three different types of inverse subordinators, evaluated at time $t = 1$, with $c=900$."}
 
 stableTail <- function(x,w){
   beta <- 0.7
