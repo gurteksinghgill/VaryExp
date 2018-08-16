@@ -1,5 +1,9 @@
 library(ggplot2)
-library(tidyverse)
+# library(tidyverse)
+library(magrittr)
+library(tibble)
+library(tidyr)
+library(dplyr)
 
 default_nuTail <- function(x, t) {
   if (t <= 0)
