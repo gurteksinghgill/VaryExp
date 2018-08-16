@@ -35,6 +35,7 @@ abstract: |
   evolution of probability densities at the interface.
 journal: "An Elsevier Journal"
 date: "`r Sys.Date()`"
+keywords: Continuous Time Random Walk, Fokker-Planck Equation, Semi-Markov process, Fractional Diffusion
 bibliography: varyExp.bib
 output:
   rticles::elsevier_article:
