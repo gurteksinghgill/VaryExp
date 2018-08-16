@@ -813,7 +813,7 @@ The evolution of a system with point mass initial condition at the interface
 $y=0$ is illustrated in Figure \ref{fig:varying-mixture}.
 
 
-```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.cap="\\label{fig:varying-mixture}Distributed order anomalous diffusion with spatially varying mixture. The mixture has two modes, $\\beta_1 = 0.7$ (left) and $\\beta_2 = 0.3$ (right). The mixing is according to $(p(x), 1-p(x))$, where $p(x) = 1 / (1 + \\exp(-2x)).$"}
+```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.cap="\\label{fig:varying-mixture}A variable mixture of subdiffusion ($\\beta_1 = 0.7$) and diffusion ($\\beta_2 = 1$). The two weights add to $1$, and the weight for $\\beta_2$ equals the logistic function with scale $1/2$, increasing from $0$ on the far left to $1$ on the far right."}
 p <- function(x)
   1 / (1 + exp(-2 * x))
 nuTail <- function(x,t) {
@@ -826,39 +826,148 @@ nuTail <- function(x,t) {
 DTSM(nuTail = nuTail, d = p, snapshots = 2^(1:5)) %>%
   rho_df() %>%
   gather(time, density, -x) %>%
-  ggplot(aes(x=x, y=density, col=time)) + geom_line()
+  ggplot(aes(x=x, y=density, col=time)) + geom_line() + 
+  ggtitle("Spatially varying mixture")
 ```
 
 
-## Inverse tempered stable subordinator
+## Inverse subordinators
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Probability densities of the tempered inverse stable subordinator."}
-nuTail <- function(x,w){
+```{r invSubordinators, message=FALSE, echo=FALSE, warning=FALSE, fig.cap="\\label{fig:invSubordinators}Probability densities for three different types of inverse subordinators, evaluated at time $t = 1$, with $c=900$."}
+
+stableTail <- function(x,w){
+  beta <- 0.7
+  w^(-beta) / gamma(1-beta)
+}
+
+tempStableTail <- function(x,w){
   beta <- 0.7
   gam <- 1
-  (w ^ (-beta) * exp(-gam * w) - gam * pracma::gammainc(w, 1 - beta)) / gamma(1-beta)
+  (w ^ (-beta) * exp(-gam * w) - gam * pracma::incgam(w, 1 - beta)) / gamma(1-beta)
 }
-DTSM(
-  c = 20 ^ 2,
-  nuTail = function(x,t){
-    if (t <= 0)
-      return(Inf)
-    out <- t^(-0.7) / gamma(1-0.7)
-    out <- out * exp(-0.1 * t)
-  },
-  xrange = c(0, 3),
-  a = function(x, t)
-  0,
-  b = function(x, t)
-  2,
-  initial_condition = "left"
-  ) %>%
-  rho_df() %>%
-  gather(time, density,-x) %>%
-  ggplot(aes(x = x, y = density, col = time)) + geom_line()
+
+c = 30^2
+snapshots = 1
+xrange = c(0,4/3)
+
+
+invStableDf <-
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c,
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 0,
+    nuTail = stableTail
+  ) %>% rho_df()
+
+invTempStableDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 0,
+    nuTail = tempStableTail
+  ) %>% rho_df()
+
+invStableDriftDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 1,
+    nuTail = stableTail
+  ) %>% rho_df()
+
+invTempStableDriftDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 1,
+    nuTail = tempStableTail
+  ) %>% rho_df()
+
+library(dplyr)
+
+joined_df <- invStableDf %>% 
+  inner_join(invTempStableDf, by='x') %>%
+  inner_join(invStableDriftDf, by='x') %>%
+  inner_join(invTempStableDriftDf, by='x')
+
+names(joined_df) <-
+  c("x",
+  "invStable",
+  "invTempStable",
+  "invStableDrift",
+  "invTempStableDrift")
+
+joined_df %>% gather(key="type", value="density", -x) %>%
+  ggplot(aes(x=x, y=density, col=type)) + geom_line() + 
+  ggtitle("Inverse Subordinators")
 ```
 
 
+The time-changing process $E(t)$ from \eqref{eq:CTRWlimit} is well-known 
+in the statistical physics literature as an "inverse subordinator", 
+and denotes the random crossing time $u$ of a level $t$ by the stable 
+Levy flight $Z_u$. 
+Subordination is a widely used method to simulate paths of CTRW limits, 
+see e.g. [@invSubord] for an overview. 
+@Alrawashdeh2017 study the "inverse tempered stable subordinator", i.e. the 
+level crossing time for the _tempered_ stable Levy flight. 
+Using our algorithm, we may compute probability densities for _any_ inverse 
+subordinator $E(t)$, defined as the level crossing time of any strictly 
+increasing Levy flight. 
+
+To this purpose, observe that if $Y_u = u$ is linear motion, then we have 
+$X(t) = E(t)$ in \eqref{eq:CTRWlimit}. In order for $Y_u = u$ to hold, we 
+simply let $a(x,t) = 0$ and $b(x,t) = 1$. 
+In other words, an inverse subordinator is a CTRW limit 
+defined via a coefficient tuple
+$$
+\left( 0, 1, d, \overline \nu(w) \right)
+$$
+A set of jump probabilities which 
+achieves the limits in \eqref{eq:cond1} and \eqref{eq:cond2} is 
+$$
+\ell^{(c)}(x,t) = 0, \quad n^{(c)}(x,t) = 1 - \chi, \quad r^{(c)} = \chi.
+$$
+Figure \ref{fig:invSubordinators} shows probability densities of the 
+inverse stable, inverse tempered stable, inverse stable with drift and 
+inverse tempered stable with drift subordinators. These have coefficient 
+tuples with: $a =0$, $b = 1$;
+in the untempered resp. tempered case, the tail of the Levy measure is
+$$
+\overline \nu(w) = \frac{w^{-0.7}}{\Gamma(1-0.7)}
+\quad \text{ resp.} \quad 
+\overline \nu(w) = \frac{w^{-\beta} e^{-\gamma w} - \gamma \Gamma(1-\beta, w)}{\Gamma(1-\beta)}
+$$
+where $\gamma = 1$;
+and for the non-drift resp. drift case, $d=0$ resp. $d=1$. 
+Since tempering makes the Levy flight $Z_u$ smaller, $E(t)$ becomes larger. 
+Moreover, a drift $d=1$ introduces the lower bound $u \le Z_u$, which 
+then becomes an upper bound $E(t) < t/d$ for the inverse subordinator. 
+
+
+
+## Acknowledgements {-}
+
+Peter Straka was supported by the Australian Research Council 
+with a Discovery Early Career Researcher Award (DECRA) DE160101147. 
+The authors thank Christopher Angstmann, Bruce Henry and James Nichols for 
+helpful discussions on discrete time random walks. 
 
 
 
