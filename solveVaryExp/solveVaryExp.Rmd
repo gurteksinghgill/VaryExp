@@ -762,32 +762,64 @@ DTSM(xrange = c(-1,1), c = 30^2, d = d, snapshots = 4^(-1:1)) %>% rho_df() %>% g
 
 ## Variably distributed fractional order
 
-Anomalous diffusion with _distributed order_ assumes a mixing probability distribution 
-$p(\beta)\,d\beta$ on the interval $(0,1]$, and the 
+Anomalous diffusion with _distributed order_ assumes a mixing probability 
+distribution of the anomalous parameter $\beta$ 
+with density $p(\beta)$ on the interval $(0,1]$.
+As illustrated by @Sandev2015, the position of the distributed order fractional 
+operator is decisive for the long-term dynamics. 
+The "natural form" uses the Caputo fractional derivative:
+$$
+\int_0^1 p(\beta) _CD_t^\beta P(y,t) \,d\beta = \frac{1}{2}\frac{\partial^2}{\partial y^2} P(y,t)
+$$
+Here the mean squared displacement grows proportionally to $t^{\beta_1}$ for early 
+times and proportionally to $t^{\beta_2}$ for late times, where $\beta_1$ is at 
+the left end of the support of $p(\beta)$ and $\beta_2$ at the right end. 
+The opposite behaviour occurs for the "modified form", with Riemann-Liouville
+fractional derivative: 
+$$
+P(y,t) = \int_0^1 p(\beta) _{RL}D_t^{1-\beta}\frac{1}{2}\frac{\partial^2}{\partial y^2} P(y,t)\,d\beta
+$$
+The FFPE for CTRW limits \eqref{eq:FFPE} can be rewritten to the natural form, 
+assuming that all coefficients $(a, b, d, \overline \nu(w)$ are constant
+[compare with Eq.(3.8) in @Straka17 with delta-function initial condition
+and $\overline \nu(t) = t^{-\beta}/\Gamma(1-\beta)$]:
+\begin{align} \label{eq:natural-mixture}
+d\, \frac{\partial}{\partial t} P(y,t) + _CD_t^\beta P(y,t)
+= \mathcal L^* P(y,t)
+\end{align}
+which represents a mixture of the two orders $1$ and $\beta$, with weights 
+$d/(d+1)$ and $1/(d+1)$, after normalization. 
 
-For constant $a$, $b$ and $d$ with $d \geq 0$ and $\nu(\omega|y) \equiv \nu(\omega)$, it can be shown that [equation 1.3] can be written as a special case of a Distributed order FFPE with a distribution over the orders of $\beta$ and 1 [equation (3.8) in JphysA paper]. This leads to a mixture of orders with the smaller one $\beta$ dominating the long-time behaviour. The behaviour of such a process is similar to that of a CTRW with two different underlying waiting time densities $\psi_1(t)$ and $\psi_2(t)$ [Sandev paper].
+We now vary the weights of the two orders in space: Assume a logistic weight 
+$p(y) = 1/(1+\exp(-2y)$ with scale $0.5$ for the exponent $1$, and the weight 
+$1-p(y)$ for the exponent $\beta = 0.7$. Then the dynamics are diffusive on 
+the far right-hand side, subdiffusive on the far left-hand side, and mixed
+at the interface near $0$, with continuous interpolation between the two 
+regimes. 
+This is summarized in the coefficient tuple
+$$
+\left( 0.9, 0, p(y), (1-p(y)) w^{-0.7} / \Gamma(1-0.7) \right).
+$$
+Note however that the CTRW limit specified by this tuple is **not** governed 
+by \eqref{eq:natural-mixture} with weights of $1$ and $\beta$ replaced by 
+$p(y)$ and $1-p(y)$, since the derivation of this equation assumes constant 
+coefficients. We deem it unlikely that a Caputo-type governing equation
+of the above dynamics exists. 
+The evolution of a system with point mass initial condition at the interface 
+$y=0$ is illustrated in Figure \ref{fig:varying-mixture}.
 
-Here we are now able to consider a qualitatively similar mixed type fractional diffusion by defining $\bar \nu(\omega|y) = p(y) \bar \nu_{\beta_1}(\omega) + (1-p(y)) \bar \nu_{\beta_2}(\omega)$ where $y, p(y) \in [0,1]$. The weight function $p(y)$ allows us  to vary the bifractional mixture in space. Figure [fig:varyingmixture] shows the resulting PDF $P(y,t)$ when the weight function follows a logistic function $p(y) = 1/(1+e^{-10y + 5})$ on $y\in[0,1]$ and initial condition is $P(dy,0) = \delta_0 (dy)$. Note that as $t \to \infty$, $P(y,t) \to \delta(y-1)$ (see [Fedotov/Falconer]), hence [fig:varyingmixture] represents the intermediate evolution of the density, the speed of which is controlled by parameters $\beta_1$, $\beta_2$ and $p(y)$.
 
 ```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.cap="\\label{fig:varying-mixture}Distributed order anomalous diffusion with spatially varying mixture. The mixture has two modes, $\\beta_1 = 0.7$ (left) and $\\beta_2 = 0.3$ (right). The mixing is according to $(p(x), 1-p(x))$, where $p(x) = 1 / (1 + \\exp(-2x)).$"}
 p <- function(x)
   1 / (1 + exp(-2 * x))
-nuTail1 <- function(x,t) {
+nuTail <- function(x,t) {
   if (t <= 0)
     Inf
   else
-    (t^(-0.3)  )/gamma(1-0.3)
+    (1-p(x)) * (t^(-0.7)  )/gamma(1-0.7)
 }
-nuTail2 <- function(x,t) {
-  if (t <= 0)
-    Inf
-  else
-    (t^(-0.7)  )/gamma(1-0.7)
-}
-mixedTail <- function(x, t)
-  p(x) * nuTail1(x, t) + (1 - p(x)) * nuTail2(x, t)
 
-DTSM(nuTail = mixedTail, snapshots = 2^(1:5)) %>%
+DTSM(nuTail = nuTail, d = p, snapshots = 2^(1:5)) %>%
   rho_df() %>%
   gather(time, density, -x) %>%
   ggplot(aes(x=x, y=density, col=time)) + geom_line()
