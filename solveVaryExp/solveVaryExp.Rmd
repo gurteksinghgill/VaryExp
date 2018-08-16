@@ -17,7 +17,8 @@ abstract: |
   We propose a universal "Semi-Markov algorithm" for the computation of
   probability distributions of Continuous Time Random Walks (CTRWs) and their
   continuum limits.
-  The algorithm is universal in the following sense: Any CTRW continuum limit
+  The algorithm is "universal", in the sense that it applies to any CTRW with 
+  Any CTRW continuum limit
   can be mapped to a bivariate Langevin equation which tracks the cumulative sum
   of jumps and waiting times, and given the coefficients of this Langevin
   equation, the algorithm will compute the desired probability distributions.
@@ -117,7 +118,7 @@ The algorithm we introduce in this paper computes solutions to all
 Fokker--Planck equations of type \eqref{eq:FFPE}
 with spatially varying memory.  Its only requirement is that the
 coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
-which tracks the cumulative sum of jumps resp. waiting times,
+which tracks the location resp. current time,
 can be evaluated numerically.
 
 Similarly to the Discrete Time Random Walk (DTRW) method
@@ -198,19 +199,19 @@ $$
 m(R) = \int_{u_1}^{u_2} \int_{w_1}^{w_2} \nu(w |Y_u)\,dw\, du
 $$
 
-for some _Levy measure_ $\nu(dw | y)$, which may vary with $y$.
+for some _Levy measure_ with density $\nu(w | y)$, which may vary with $y$.
 Recall that a Levy measure is defined by the requirement
 $$
-\int_0^\infty \min\{1, w\} \nu(dw | y) < \infty.
+\int_0^\infty \min\{1, w\} \nu(w | y)\,dw < \infty.
 $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
 choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
 with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
-It will be convenient to introduce the tail function of the Levy measure
+It will be convenient to introduce the space-dependent tail function of the Levy measure
 $$
-\overline \nu(w | y) := \int_w^\infty \nu(dw | y), \quad w > 0.
+\overline \nu(w | y) := \int_w^\infty \nu(w | y)\,dw, \quad w > 0.
 $$
 and its Laplace transform
 $$
@@ -221,6 +222,11 @@ $$
 \hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
 = \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
 $$
+The renewal function represents the mean occupation time of $Z_u$ conditional
+on $y$ [@MMMPS12]; 
+that is, $V(y,s)$ is the mean amount of auxiliary time ($u$) for 
+which $Z_u < s$, if $y$ is frozen.
+
 As shown by @BaeumerStraka16, the Fokker--Planck equation with memory
 \eqref{eq:FFPE} has, under certain continuity conditions on the four coefficient
 functions, a unique solution $P(y,t)$.
@@ -245,7 +251,7 @@ if every element in \eqref{eq:coeff-tuple}, say, doubled,
 then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
 the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
 hence does not affect the distribution of the trajectories $X(t)$. 
-This remains true even if the speed varies with the location $(x,t)$ of 
+This would remain true even if the speed varied with the location $(x,t)$ of 
 $(Y_u,Z_u)$.
 
 Assuming that the coefficients are all bounded functions in $(x,t)$, 
@@ -253,18 +259,18 @@ we hence divide by a large enough number so that $a(x,t) < 1$ for all $(x,t)$.
 (At $a(x,t) = 1$, numerical instabilities may occur, which are smoothed out 
 if e.g. $a(x,t) < 0.9$ throughout the domain.)
 In the derivation of our algorithm, we will transform the tuple \eqref{eq:coeff-tuple}
-as follows: Define $\theta(x)$ via $d(x) = \theta(x) / (1-\theta(x))$. 
+as follows: Define $\theta(x) \in [0, 1)$ via $d(x) = \theta(x) / (1-\theta(x))$. 
 Then multiply the tuple \eqref{eq:coeff-tuple} by $(1-\theta(x))$, to get 
 the transformed tuple
 \begin{align} \label{eq:coeff-tuple-trans}
 \left((1-\theta(x)) a(x,t), (1-\theta(x)) b(x,t), \theta(x), 
-(1-\theta(x)) \overline \nu(w, y)\right).
+(1-\theta(x)) \overline \nu(w, x)\right).
 \end{align}
 
 
 
-Hence if we assume that $d(y)$ is bounded, then we can also assume 
-WLOG that $0 \le d(y) \le 1$. 
+Hence if we assume that $d(y)$ is bounded, then we may also assume 
+WLOG that $0 \le d(x) \le 1$ and $a(x,t) < 1$. 
 
 Finally, we add the technical but non-restrictive condition 
 \begin{align} \label{eq:blowup}
@@ -279,13 +285,13 @@ $\beta(y) \uparrow 1$, see Lemma \ref{lem:psi}.
 # Discrete Langevin Dynamics
 
 Let $c > 0$ be a scaling parameter, and define a spatio-temporal grid $\#$
-with spacings $\chi = c^{-1/2}$ and $\tau = c^{-1/\alpha_0}$, where
-$\alpha_0 \in (0,1)$ is some reference value to be defined later.
+with spacings $\chi \sim c^{-1/2}$ and $\tau = 1/c$.
 Assuming for simplicity that space is one-dimensional, the grid is embedded
 in space-time $\mathbb R \times [0, \infty)$.
 In this section we define for each $c > 0$ a Langevin process
 $(Y^{(c)}_u, Z^{(c)}_u)$ with state space $\#$ such that as $c \to \infty$,
-$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$.
+$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$ in the sense of stochastic 
+processes.
 
 It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ must be a jump process hopping on $\#$.
 Since $Y_u$ has continuous sample paths, nothing is gained by allowing
@@ -307,7 +313,7 @@ as a mixture of a "local" and a "nonlocal" component:
 + (1-\theta(x)) \psi^{(c)}_{\rm nonloc}(j\tau|x), \quad j=1,2,\ldots
 \label{eq:def-psi}
 \end{align}
-where, by definition, $0 \le d(x) \le 1$.
+where, by definition, $0 \le \theta(x) \le 1$.
 The local part is simply deterministic, with all mass at $\tau$, that is 
 $\psi^{(c)}_{\rm loc}(\tau | x) = 1$ and $\psi^{(c)}_{\rm loc}(k\tau | x) = 0$
 for $k=2, 3, \ldots$.
@@ -350,7 +356,7 @@ original location), and to jump right, are given by
 \quad
 n(x,t) = 1 - a(x,t)/\bar a,
 \quad
-r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}.
+r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}
 \end{gather*}
 where $x$ is the location of the walker before the jump, and $t$ is the time at which the jump occurs.
 In order for $r, n$ and $\ell$ to be between $0$ and $1$,
@@ -366,11 +372,15 @@ $\ell^{(c)}(x,t)$, $n(x,t)$ and $r^{(c)}(x,t)$ define a jump kernel on $\#$,
 which defines the distribution of jump $z$ and waiting time $w$ given the current
 location of the walker at $x$ at time $t$:
 \begin{align}
-K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
+\begin{split}
+& K^{(c)}(z,w|x,t)
+\\
+&= \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
 + n(x, t+w) \delta_0(z)
 + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
 \psi^{(c)}(w|x).
 \label{eq:K}
+\end{split}
 \end{align}
 Note that we evaluate the jump probabilities at the end $t+w$ of a waiting time,
 as is common for CTRWs.
@@ -379,21 +389,21 @@ the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$ and which we repeat
 here for convenience:
 \begin{align} \label{eq:cond1}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
+\iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z cK^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
 \\ \label{eq:cond2}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
+\iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 cK^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
 \\ \label{eq:cond3}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= \theta(x)
+\iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w cK^{(c)}(z,w | x,s)\,dz\,dw &= \theta(x)
 \\
 \label{eq:cond4}
 \lim_{c \to \infty}
-c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) (1-\theta(x)) \nu(w|x)\,dw
+\iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) cK^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
 We give calculations in the appendix which confirm that the above four
-conditions indeed hold for $K^{(c)}(z,w|x,t)$.
+conditions indeed hold for $K^{(c)}(z,w|x,t)$ as defined in \eqref{eq:K}. 
 
 ### Remark {-}
 
@@ -413,17 +423,6 @@ as $c \to \infty$.
 
 
 # Semi-Markov numeric scheme
-
-As described at the beginning of Section 3,
-the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
-for which we write $X^{(c)}(t)$. By Theorem 2.2 in @Straka17,
-$X^{(c)}(t)$ converges to the CTRW coninuum limit process $X(t)$
-from \eqref{eq:CTRWlimit}.
-For large $c$, the probability distributions of $X^{(c)}(t)$ may hence be
-taken as approximations of $P(y,t)$.
-In this section, we derive master equations for the probability distributions
-of $X^{(c)}(t)$.
-
 
 As described at the beginning of Section 3,
 the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
@@ -466,12 +465,10 @@ $$
 \mathbf P(W > (j + 1)\tau | W > j \tau) = h_{i,j+1} / h_{i,j}.
 $$
 That is, if at time $k\tau$, position and age are $(x_k, v_k) = (i,j)$,
-then at time $(k+1)\tau$
+then at time $(k+1)\tau$ the pair $(x_{k+1}, v_{k+1})$ is equal to 
 
-* with probability $h_{i,j+1} / h_{i,j}$ we have
-  $(x_{k+1}, v_{k+1}) = (x_k, v_k + 1)$, and
-* with probability $1 - h_{i,j+1} / h_{i,j}$ we have
-  $(x_{k+1}, v_{k+1}) = (x_k + \zeta, 0)$,
+* $(x_k, v_k + 1)$ with probability $h_{i,j+1} / h_{i,j}$, and
+* $(x_k + \zeta, 0)$ with probability $1 - h_{i,j+1} / h_{i,j}$,
 
 where $\zeta \in \{-1, 0, +1\}$ with probabilities $\ell^{(c)}(i\chi, (k+1)\tau)$,
 $n(i\chi, (k+1)\tau)$ and $r^{(c)}(i\chi, (k+1)\tau)$.
@@ -510,7 +507,9 @@ $$
 \mathbf P(X^{(c)}_t = i\chi) =: \rho^k_i = \sum_{j=0}^J \xi^k_{i,j},
 \quad k = \lfloor t /\tau \rfloor.
 $$
-Here we note that $X^{(c)}(t) = X^{(c)}(t_\tau)$, where $t_\tau$ is
+Here we note that 
+$X^{(c)}(t) = X^{(c)}(t_\tau) = X^{(c)}(\lfloor t/\tau \rfloor \tau)$, 
+where $t_\tau$ is
 the left-nearest lattice point defined exactly as $w_\tau$ in \eqref{eq:w-tau}.
 
 
@@ -521,8 +520,11 @@ lattice of ages.  If we cannot allocate
 $\lfloor T/\tau \rfloor$ lattice points, where $T$ is the largest time of interest, then it is possible that the age of walkers may reach the end of the lattice. In this case, and if the walker does not jump in the next time step, we do not increase its age any further, until it eventually does jump:
 $$
 \xi^{k+1}_{i,J} = \frac{h_{i,J}}{h_{i,J-1}} \xi^k_{i,J-1}
-+ \frac{h_{i,J+1}}{h_{i,J}} \xi^k_{i,J}.
++ \frac{h_{i,J+1}}{h_{i,J}} \xi^k_{i,J},
 $$
+The first summand being walkers whose age has reached $J$ in the current 
+time step, and the second summand being walkers of age $J$ who do not jump 
+in the current time step.
 Finally, assuming that the spatial coordinates of the lattice go from
 $-I$ to $I$, we implement Neumann boundary conditions by placing a walker
 back on the boundary whenever it would otherwise have jumped off the lattice,
@@ -555,9 +557,9 @@ Due to the convergence \eqref{eq:CTRW-J1}, we have
   \quad \text{ as } c \to \infty,
 \end{align}
 for all bounded continuous real-valued $f$ defined on $\mathbb R$.
-Assuming that the distribution of $X_t$ has a probability density,
-we may replace $f$ by an indicator function of an interval $(a,b)$,
-and \eqref{eq:consistency} reads
+If the distribution of $X_t$ has a probability density,
+then the above convergence also holds if $f$ is an indicator function 
+of an interval $(a,b)$, and reads
 \begin{align}
   \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
   \longrightarrow
@@ -593,7 +595,7 @@ We study several examples.
 ## Continuous interface problem
 
 
-```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text. Other numeric parameters are $c = 100$, $\\chi = 1/10$ and $\\tau = 1/100$."}
+```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text, and $c = 400$."}
 source("../R/varyExp-DTSM.R")
 T0 <- 1
 alpha <- function(x)
@@ -663,23 +665,24 @@ $x$, $0.75$ for large positive x and remains just under $1$ near $x=0$.
 Figure \ref{fig:interface} shows the evolution of the density $P(y,t)$ 
 with a delta function initial condition. 
 At small times we observe two peaks reflecting the trapping that occurs 
-either side of the interface. For late times we can see the aggregation of all 
-particles towards the left hand side ($y<0$) where trapping is stronger.
+either side of the interface. For late times, one begins to see the aggregation of all 
+particles towards the left hand side ($x<0$) where trapping is stronger.
 
 
 @Straka17 shows that changing time units from $T_0 = 1$ to $T_0 = 2$ results 
 in the the updated diffusivity and drift coefficients 
 \begin{align*}
-a_{\beta(y)}(x,t) = \frac{a(x,t)}{T_0^{-\alpha(x)}}, 
+a_{\beta(x)}(x,t) = \frac{a(x,t)}{T_0^{-\alpha(x)}}, 
 \quad 
-b_{\beta(y)}(x,t) = \frac{b(x,t)}{T_0^{-\alpha(x)}},
+b_{\beta(x)}(x,t) = \frac{b(x,t)}{T_0^{-\alpha(x)}},
 \end{align*}
 leading to spatially inhomogeneous temporal scaling. 
 We confirm this by computing probability densities for the parameter tuple
-$(\overline \nu(w|x), d(x), a_{\alpha(x)}(x,t), b_{\alpha(x)}(x))$, at the 
-timestamps multiplied by $T_0 = 2$, and plotting the differences
+$\left( a_{\alpha(x)}(x,t), b_{\alpha(x)}(x), d(x), \overline \nu(w|x)\right)$, 
+at the timestamps multiplied by $T_0 = 2$, and plotting the absolute differences
 (Figure \ref{fig:difference}). 
-Relative differences are near 1\%, and remain stable after 8 units of time,
+The absolute values of differences are mostly all below 0.015, 
+and remain stable after 8 units of time,
 indicating that indeed the same densities are calculated in both cases. 
 
 
@@ -747,7 +750,7 @@ plyr::ldply(2^(-2:2), d_value_to_df) %>%
 
 
 
-```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7), c = 900, \\tau = 1/900, \\chi = 1/30$."}
+```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin^2(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.9$, $b(x,t) = 0$, $\\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7)$, $c = 900$."}
 d <- function(x,t){
   10 * (sin(2*pi*x))^2
 }
