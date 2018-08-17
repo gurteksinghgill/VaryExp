@@ -9,6 +9,7 @@ author:
     email: p.straka@unsw.edu.au
     affiliation: UNSW Sydney
     footnote: Corresponding Author
+keeplatex: true
 address:
   - code: UNSW Sydney
     address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
@@ -961,11 +962,11 @@ $$
 \quad \text{ resp.} \quad 
 \overline \nu(w) = \frac{w^{-\beta} e^{-\gamma w} - \gamma \Gamma(1-\beta, w)}{\Gamma(1-\beta)}
 $$
-where $\gamma = 1$;
+where we set the tempering parameter $\gamma = 1$;
 and for the non-drift resp. drift case, $d=0$ resp. $d=1$. 
 Since tempering makes the Levy flight $Z_u$ smaller, $E(t)$ becomes larger. 
 Moreover, a drift $d=1$ introduces the lower bound $u \le Z_u$, which 
-then becomes an upper bound $E(t) < t/d$ for the inverse subordinator. 
+then becomes an upper bound $E(t) \le t/d$ for the inverse subordinator. 
 
 
 
@@ -1014,10 +1015,10 @@ helpful discussions on discrete time random walks.
 
 ## Reproducibility {-}
 
-All computations and plots of this paper were made 
-using the `R` language [@R] with the `rmarkdown` [@rmarkdown] and `rticles` 
-[@rticles] packages. 
-All code is openly available at <https://github.com/strakaps/VaryExp>. 
+All computations and plots of this paper were made using the `R` programming
+language [@R] with the `rmarkdown` [@rmarkdown] 
+and `rticles` [@rticles] packages. 
+All source code is openly available [@varyExp]. 
 
 
 # Appendix {-}
