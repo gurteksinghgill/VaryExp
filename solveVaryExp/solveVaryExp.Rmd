@@ -1,6 +1,6 @@
 ---
 title: |
-  A Universal Algorithm for Continuous Time Random Walks Limit Distributions
+  A Universal Algorithm for Continuous Time Random Walk Limit Distributions
 author:
   - name: Gurtek Gill
     email: rickygill01@gmail.com
@@ -29,7 +29,7 @@ abstract: |
   The algorithm is based on a stochastic framework utilizing Levy noise in 
   space-time.
   Our framework and DTRW algorithm apply to all said generalizations of CTRW
-  limits, as we illustrate with three worked examples. 
+  limits, as we illustrate with four worked examples. 
   Due to the desirable properties of consistency, positivity of solutions and 
   conservation of mass and its wide applicability, our generalized 
   DTRW algorithm is an excellent first choice for the computation 
@@ -43,6 +43,11 @@ output:
     number_sections: true
 preamble: |
   \usepackage{amsthm,amsmath,amssymb,hyperref}
+  \usepackage[a4paper, margin=1in]{geometry}
+  \renewcommand{\baselinestretch}{1.5}
+  \usepackage{lineno}
+  \linenumbers
+
 ---
 
 ```{r setup, include=FALSE}
@@ -150,6 +155,9 @@ with spatially varying memory.  Its only requirement is that the
 coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
 which tracks the location resp. current time,
 are bounded and continuous and can be evaluated numerically.
+Hence it applies to all cases listed in the above table, except possibly 
+the distributed order (RL-form) case, for which $\bar \nu(w|y)$ is not readily 
+available.
 
 Similarly to the Discrete Time Random Walk (DTRW) method
 [@Angstmann2015a; @Angstmann2016a], our algorithm calculates the
@@ -244,9 +252,10 @@ results in $Z_u$ having independent increments, which follow the stable distribu
 with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
 It will be convenient to introduce the space-dependent tail function of the Levy measure
-$$
-\overline \nu(w | y) := \int_w^\infty \nu(w | y)\,dw, \quad w > 0.
-$$
+\begin{align}
+\label{eq:nubar}
+\overline \nu(w | y) := \int_w^\infty \nu(w' | y)\,dw', \quad w > 0.
+\end{align}
 and its Laplace transform
 $$
 \hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
@@ -258,8 +267,8 @@ $$
 $$
 The renewal function represents the mean occupation time of $Z_u$ conditional
 on $y$ [@MMMPS12]; 
-that is, $V(y,s)$ is the mean amount of auxiliary time ($u$) for 
-which $Z_u < s$, if $y$ is frozen.
+that is, assuming that $y$ was frozen, 
+$V(y,s)$ is the mean amount of auxiliary time $u$ for which $Z_u < s$.
 
 As shown by @BaeumerStraka16, the Fokker--Planck equation with memory
 \eqref{eq:FFPE} has, under certain continuity conditions on the four coefficient
@@ -284,9 +293,8 @@ However, the representation is only unique up to a multiplicative factor:
 if every element in \eqref{eq:coeff-tuple}, say, doubled, 
 then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
 the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
-hence does not affect the distribution of the trajectories $X(t)$. 
-This would remain true even if the speed varied with the location $(x,t)$ of 
-$(Y_u,Z_u)$.
+hence does not affect the distribution of the trajectories $X(t)$
+[@Straka17]. 
 
 Assuming that the coefficients are all bounded functions in $(x,t)$, 
 we hence divide by a large enough number so that $a(x,t) < 1$ for all $(x,t)$. 
@@ -370,7 +378,7 @@ H^{(c)}(w | x) = 1 \wedge \frac{\overline \nu(w|x)}{c},
 $$
 where $a \wedge b := \min\{a, b\}$. 
 For convenience, we say that $\overline \nu(w|x) = \infty$ if $w \le 0$.
-Then, define 
+Then, define $w_\tau$ as the largest grid point not larger than $w$:
 \begin{align}
 w_\tau := j\tau, \quad \text{ where }  \quad j\tau \le w < (j+1)\tau.
 \label{eq:w-tau}
@@ -634,9 +642,12 @@ in @Angstmann2015a, if we choose $h_{i,j} = \Psi(j)$.
 
 # Examples {#sec:examples}
 
-Within our unifying semi-Markov framework, we may approximate probability 
-distributions of a great variety of CTRW limits. 
-We study several examples. 
+In this section, we apply our algorithm to four novel examples. 
+All source code is openly available at \url{https://github.com/strakaps/VaryExp} [@varyExp]. 
+Computations and plots were produced using the `R` programming
+language [@R] using the packages `rmarkdown` [@rmarkdown] 
+and `rticles` [@rticles].
+
 
 
 ## Continuous interface problem
@@ -1054,14 +1065,6 @@ Peter Straka was supported by the Australian Research Council
 with a Discovery Early Career Researcher Award (DECRA) DE160101147. 
 The authors thank Christopher Angstmann, Bruce Henry and James Nichols for 
 helpful discussions on discrete time random walks. 
-
-
-## Reproducibility {-}
-
-All computations and plots of this paper were made using the `R` programming
-language [@R] with the `rmarkdown` [@rmarkdown] 
-and `rticles` [@rticles] packages. 
-All source code is openly available [@varyExp]. 
 
 
 # Appendix {-}
