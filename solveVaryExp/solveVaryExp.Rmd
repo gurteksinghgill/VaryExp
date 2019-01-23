@@ -33,7 +33,7 @@ abstract: |
   Due to the desirable properties of consistency, positivity of solutions and 
   conservation of mass and its wide applicability, our generalized 
   DTRW algorithm is an excellent first choice for the computation 
-  of any CTRW limit distribution.
+  of most CTRW limit distributions.
 journal: "a journal"
 date: "`r Sys.Date()`"
 keywords: Continuous Time Random Walk, Fokker-Planck Equation, Semi-Markov process, Fractional Diffusion
@@ -87,20 +87,46 @@ acting on the time variable in the equation [@BaeumerStraka16]:
 \int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
 \label{eq:FFPE}
 \end{align}
-The table below gives an overview over frequently studied forms of
-$V(y,s)$:
+The memory kernel corresponds uniquely to the Levy coefficient functions 
+$d(y)$ and $\bar \nu(w|y)$ from Equations \eqref{eq:dZ} and \eqref{eq:nubar}
+via 
+$$
+\hat V(y, \lambda) = \frac{1}{\lambda [d(y) + \hat{\bar \nu}(\lambda |y)]}
+$$
+where a hat denotes the Laplace transform $s \rightsquigarrow \lambda$
+in the $s$ variable only [@BaeumerStraka16; @Straka17].
+In the following table, we collect a few specifications of $\hat V(y,\lambda)$
+and $\hat {\bar \nu}(\lambda | y)$ from the literature:
 
-|                       | Kernel        | Laplace Transform | Reference |
-| ------:               | :-------------: |:-------------:| :--------------: |
-| no memory             | $1$                             | $\lambda^{-1}$ |
-| subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
-| tempered subdiffusion | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 |
+|                       | $\hat V(y,\lambda)$        | $\bar\nu(w\vert y)$ | Reference |
+| ----------------:     | :-------------: |:-----------------:| :--------------: |
+| memoryless            | $\lambda^{-1}$ | 0 |
+| subdiffusion          | $\lambda^{-\alpha}$ | $w^{-\alpha}/\Gamma(1-\alpha)$ | @Sokolov2006e |
+| tempered subdiffusion | $[(\lambda + \eta)^\alpha - \eta^\alpha]^{-1}$ | $\frac{w^{-\alpha} e^{-\eta w} - \eta \Gamma(1-\alpha, w)}{\Gamma(1-\alpha)}$ | @Gajda2010 |
+| distributed order (Caputo form) | $\left[\int_0^1 (\tau \lambda)^\alpha p(\alpha)\,d\alpha\right]^{-1}$ | $\int_0^1 \frac{\tau^\alpha w^{-\alpha}}{\Gamma(1-\alpha)} p(\alpha)\,d\alpha$ | @Meerschaert2006ultra[^1]
+| distributed order (RL-form) | $\int_0^1(\tau \lambda)^{-\alpha} p(\alpha)\,d\alpha$ | no closed form[^2] | @Mainardi08
+| variable order | $\lambda^{-\alpha(y)}$ | $w^{-\alpha(y)}/\Gamma(1-\alpha(y))$ | @Chechkin2005a |
+| spatially varying tempered subdiffusion   | $[(\lambda + \eta(y))^{\alpha(y)} - \eta^{\alpha(y)}]^{-1}$ | $\frac{w^{-\alpha(y)} e^{-\eta(y) w} - \eta(y) \Gamma(1-\alpha(y), w)}{\Gamma(1-\alpha(y))}$ | @Straka17
 
-As the table indicates, most researchers have studied spatially constant
-memory kernels, without any dependence on the space variable $y$.
+[^1]: We have added the factor $\tau^\alpha$, where $\tau$ is a time scale, 
+    in order to make dimensions explicit. The factor $\Gamma(1-\alpha)^{-1}$
+    was added to unify the presentation.
+[^2]: The tail function $\bar \nu(w | y)$ can be obtained by finding 
+    the inverse Laplace transform 
+    $\mathcal L^{-1}\left\lbrace\left[\lambda \int_0^1(\tau \lambda)^{-\alpha} p(\alpha)\,d\alpha\right]^{-1}\right\rbrace$
+[^3]: For a discussion of the few works that did study variable order problems, 
+    see @Straka17. 
+
+
+Up to this article (see Section 5), anomalous diffusion problems with 
+positive temporal drift $d(y) > 0$ have not been considered, to the best of our
+knowledge, and hence throughout the table $d(y) \equiv 0$. 
+Moreover, the vast majority of works in numerical mathematics have studied
+spatially constant memory kernels, without any dependence on the space variable
+[^3] $y$. 
 This implies a homogeneous distribution of waiting times throughout the
 entire medium, i.e. that diffusion is equally
-anomalous everywhere.  This assumption is of course too restrictive for some
+anomalous everywhere.  This assumption is too restrictive for some
 applications in biophysics [@Wong04; @StrakaFedotov14], e.g. when trapping
 varies due to locally different compositions of the cellular matrix.
 Moreover, media with two
