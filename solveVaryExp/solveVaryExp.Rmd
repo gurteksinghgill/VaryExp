@@ -14,34 +14,32 @@ address:
   - code: UNSW Sydney
     address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
 abstract: |
-  Continuous Time Random Walks (CTRWs) are widely used models of subdiffusive
-  stochastic transport. The literature contains a great number of specialized
-  algorithms for the computation of CTRW probability densities, which makes
-  it difficult for an applied scientist to get started. This article addresses this
-  problem by introducing a universal computational framework which applies to
-  any CTRW (limit) process.
-  
-  Our algorithm leverages a representation of CTRWs via bivariate Levy pro-
-  cesses. These Levy processes are discretized, to produce generalized master
-  
-  equations. It resembles the recent Discrete Time Random Walk (DTRW) algo-
-  rithm, and shares the same desirable features: consistency, conservation of mass,
-  
-  and strictly non-negative solutions. Moreover, it provides a novel approach to
-  solving fractional Fokker-Planck equations of variable order, which model media
-  with spatially varying disorder. Using our framework, we also uncover a novel
-  model for the cross-over from diffusive behaviour at early times to subdiffusive
-  behaviour at late times, which we term “early tempering”.
-  We highlight the applicability of our algorithm by computing i) solutions to
-  fractional Fokker-Planck equations of variable order, ii) probability densities of
-  early tempered subdiffusion, and iii) probability densities of generalized inverse
-  subordinators.
-journal: "An Elsevier Journal"
+  Continuous Time Random Walks (CTRWs) model stochastic transport in media with 
+  traps and dead ends and are widely utilized in biophysics and groundwater 
+  hydrology. 
+  Scaling limits of CTRWs are particularly useful, because their probability
+  distributions can be computed via fractional Fokker-Planck equations (FFPEs), 
+  and may be extended to include particle reactions and nonlinear interaction.
+  The last two decades have produced generalisations of CTRW limit dynamics
+  and FFPEs, where particle trapping times 
+  are not power-law distributed but e.g. exponentially tempered or a mixture of 
+  power laws (distributed order), or may vary in space (variable order).
+  We introduce a generalized discrete-time random walk (DTRW) algorithm 
+  for the solution of such generalized FFPEs. 
+  The algorithm is based on a stochastic framework utilizing Levy noise in 
+  space-time.
+  Our framework and DTRW algorithm apply to all said generalizations of CTRW
+  limits, as we illustrate with three worked examples. 
+  Due to the desirable properties of consistency, positivity of solutions and 
+  conservation of mass and its wide applicability, our generalized 
+  DTRW algorithm is an excellent first choice for the computation 
+  of any CTRW limit distribution.
+journal: "a journal"
 date: "`r Sys.Date()`"
 keywords: Continuous Time Random Walk, Fokker-Planck Equation, Semi-Markov process, Fractional Diffusion
 bibliography: varyExp.bib
 output:
-  rticles::jss_article:
+  rticles::elsevier_article:
     number_sections: true
 preamble: |
   \usepackage{amsthm,amsmath,amssymb,hyperref}
