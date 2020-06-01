@@ -2,8 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-
+.DS_Store
 *.bbl
 *.log
 *.synctex.gz
 *.spl
+solveVaryExp_cache

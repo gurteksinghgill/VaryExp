@@ -1,7 +1,6 @@
 ---
 title: |
-  A Universal Algorithm for Continuum Limit Distributions of Continuous
-  Time Random Walks
+  A Universal Algorithm for Continuous Time Random Walk Limit Distributions
 author:
   - name: Gurtek Gill
     email: rickygill01@gmail.com
@@ -10,36 +9,45 @@ author:
     email: p.straka@unsw.edu.au
     affiliation: UNSW Sydney
     footnote: Corresponding Author
+keeplatex: true
 address:
   - code: UNSW Sydney
     address: School of Mathematics & Statistics, Sydney, NSW 2052, Australia
 abstract: |
-  We propose a universal "Semi-Markov algorithm" for the computation of
-  probability distributions of Continuous Time Random Walks (CTRWs) and their
-  continuum limits.
-  The algorithm is universal in the following sense: Any CTRW continuum limit
-  can be mapped to a bivariate Langevin equation which tracks the cumulative sum
-  of jumps and waiting times, and given the coefficients of this Langevin
-  equation, the algorithm will compute the desired probability distributions.
-  Besides subdiffusion with space- and time-dependent drift, this approach
-  covers subdiffusion with spatially varying exponent $\beta(x) \in (0,1)$ and
-  tempering parameter $\theta(x) \ge 0$, and subdiffusion with mixed (distributed)
-  order where the mixture can vary in space.
-  Our Semi-Markov algorithm generalizes the recent
-  "Discrete Time Random Walk" algorithm, and shares the same properties:
-  it is consistent, conserves mass, generates strictly non-negative solutions,
-  and has the same computational complexity.
-  To illustrate applicability, we set up an interface problem, where two
-  subdiffusive media with different anomalous exponents meet, and compute the
-  evolution of probability densities at the interface.
-journal: "An Elsevier Journal"
+  Continuous Time Random Walks (CTRWs) model stochastic transport in media with 
+  traps and dead ends and are widely utilized in biophysics and groundwater 
+  hydrology. 
+  Scaling limits of CTRWs are particularly useful, because their probability
+  distributions can be computed via fractional Fokker-Planck equations (FFPEs), 
+  and may be extended to include particle reactions and nonlinear interaction.
+  The last two decades have produced generalisations of CTRW limit dynamics
+  and FFPEs, where particle trapping times 
+  are not power-law distributed but e.g. exponentially tempered or a mixture of 
+  power laws (distributed order), or may vary in space (variable order).
+  We introduce a generalized discrete-time random walk (DTRW) algorithm 
+  for the solution of such generalized FFPEs. 
+  The algorithm is based on a stochastic framework utilizing Levy noise in 
+  space-time.
+  Our framework and DTRW algorithm apply to all said generalizations of CTRW
+  limits, as we illustrate with four worked examples. 
+  Due to the desirable properties of consistency, positivity of solutions and 
+  conservation of mass and its wide applicability, our generalized 
+  DTRW algorithm is an excellent first choice for the computation 
+  of most CTRW limit distributions.
+journal: "a journal"
 date: "`r Sys.Date()`"
+keywords: Continuous Time Random Walk, Fokker-Planck Equation, Semi-Markov process, Fractional Diffusion
 bibliography: varyExp.bib
 output:
   rticles::elsevier_article:
     number_sections: true
 preamble: |
   \usepackage{amsthm,amsmath,amssymb,hyperref}
+  \usepackage[a4paper, margin=1in]{geometry}
+  \renewcommand{\baselinestretch}{1.5}
+  \usepackage{lineno}
+  \linenumbers
+
 ---
 
 ```{r setup, include=FALSE}
@@ -84,20 +92,46 @@ acting on the time variable in the equation [@BaeumerStraka16]:
 \int_0^t P(y,t-s) V(y,s)\,ds \right] + \delta_{(0,0)}(y,t).
 \label{eq:FFPE}
 \end{align}
-The table below gives an overview over frequently studied forms of
-$V(y,s)$:
+The memory kernel corresponds uniquely to the Levy coefficient functions 
+$d(y)$ and $\bar \nu(w|y)$ from Equations \eqref{eq:dZ} and \eqref{eq:nubar}
+via 
+$$
+\hat V(y, \lambda) = \frac{1}{\lambda [d(y) + \hat{\bar \nu}(\lambda |y)]}
+$$
+where a hat denotes the Laplace transform $s \rightsquigarrow \lambda$
+in the $s$ variable only [@BaeumerStraka16; @Straka17].
+In the following table, we collect a few specifications of $\hat V(y,\lambda)$
+and $\hat {\bar \nu}(\lambda | y)$ from the literature:
 
-|                       | Kernel        | Laplace Transform | Reference |
-| ------:               | :-------------: |:-------------:| :--------------: |
-| no memory             | $1$                             | $\lambda^{-1}$ |
-| subdiffusion          | $s^{\alpha-1} / \Gamma(\alpha)$ | $\lambda^{-\alpha}$ | @Sokolov2006e |
-| tempered subdiffusion | unknown | $((\lambda + \theta)^\alpha - \theta^\alpha)^{-1}$ | @Gajda2010 |
+|                       | $\hat V(y,\lambda)$        | $\bar\nu(w\vert y)$ | Reference |
+| ----------------:     | :-------------: |:-----------------:| :--------------: |
+| memoryless            | $\lambda^{-1}$ | 0 |
+| subdiffusion          | $\lambda^{-\alpha}$ | $w^{-\alpha}/\Gamma(1-\alpha)$ | @Sokolov2006e |
+| tempered subdiffusion | $[(\lambda + \eta)^\alpha - \eta^\alpha]^{-1}$ | $\frac{w^{-\alpha} e^{-\eta w} - \eta \Gamma(1-\alpha, w)}{\Gamma(1-\alpha)}$ | @Gajda2010 |
+| distributed order (Caputo form) | $\left[\int_0^1 (\tau \lambda)^\alpha p(\alpha)\,d\alpha\right]^{-1}$ | $\int_0^1 \frac{\tau^\alpha w^{-\alpha}}{\Gamma(1-\alpha)} p(\alpha)\,d\alpha$ | @Meerschaert2006ultra[^1]
+| distributed order (RL-form) | $\int_0^1(\tau \lambda)^{-\alpha} p(\alpha)\,d\alpha$ | no closed form[^2] | @Mainardi08
+| variable order | $\lambda^{-\alpha(y)}$ | $w^{-\alpha(y)}/\Gamma(1-\alpha(y))$ | @Chechkin2005a |
+| spatially varying tempered subdiffusion   | $[(\lambda + \eta(y))^{\alpha(y)} - \eta^{\alpha(y)}]^{-1}$ | $\frac{w^{-\alpha(y)} e^{-\eta(y) w} - \eta(y) \Gamma(1-\alpha(y), w)}{\Gamma(1-\alpha(y))}$ | @Straka17
 
-As the table indicates, most researchers have studied spatially constant
-memory kernels, without any dependence on the space variable $y$.
+[^1]: We have added the factor $\tau^\alpha$, where $\tau$ is a time scale, 
+    in order to make dimensions explicit. The factor $\Gamma(1-\alpha)^{-1}$
+    was added to unify the presentation.
+[^2]: The tail function $\bar \nu(w | y)$ can be obtained by finding 
+    the inverse Laplace transform 
+    $\mathcal L^{-1}\left\lbrace\left[\lambda \int_0^1(\tau \lambda)^{-\alpha} p(\alpha)\,d\alpha\right]^{-1}\right\rbrace$
+[^3]: For a discussion of the few works that did study variable order problems, 
+    see @Straka17. 
+
+
+Up to this article (see Section 5), anomalous diffusion problems with 
+positive temporal drift $d(y) > 0$ have not been considered, to the best of our
+knowledge, and hence throughout the table $d(y) \equiv 0$. 
+Moreover, the vast majority of works in numerical mathematics have studied
+spatially constant memory kernels, without any dependence on the space variable
+[^3] $y$. 
 This implies a homogeneous distribution of waiting times throughout the
 entire medium, i.e. that diffusion is equally
-anomalous everywhere.  This assumption is of course too restrictive for some
+anomalous everywhere.  This assumption is too restrictive for some
 applications in biophysics [@Wong04; @StrakaFedotov14], e.g. when trapping
 varies due to locally different compositions of the cellular matrix.
 Moreover, media with two
@@ -113,12 +147,17 @@ In the domain of _inhomogeneously anomalous_ diffusion, several authors
 have developed computational methods for _variable order_ fractional Fokker--Planck Equations, but only the equation studied by @Chen2010
 is consistent with a CTRW scaling limit representation [@Straka17].
 
-The algorithm we introduce in this paper computes solutions to all
+The algorithm we introduce in this paper
+is an extension of the Semi-Markov approach by @Gill2016. 
+It computes solutions to all
 Fokker--Planck equations of type \eqref{eq:FFPE}
 with spatially varying memory.  Its only requirement is that the
 coefficients of the underlying bivariate Langevin process $(Y_u, Z_u)$,
-which tracks the cumulative sum of jumps resp. waiting times,
-can be evaluated numerically.
+which tracks the location resp. current time,
+are bounded and continuous and can be evaluated numerically.
+Hence it applies to all cases listed in the above table, except possibly 
+the distributed order (RL-form) case, for which $\bar \nu(w|y)$ is not readily 
+available.
 
 Similarly to the Discrete Time Random Walk (DTRW) method
 [@Angstmann2015a; @Angstmann2016a], our algorithm calculates the
@@ -132,23 +171,27 @@ However, we do not rely on discrete Z-transforms, which means that
 our method remains tractable not just for Shibuya-distributed waiting
 times.
 
-In the rest of this paper:
-We give a short account of bivariate Langevin dynamics
-and their relevance for this article in Section 2.
-In Section 3 we construct a sequence of DTRWs which converges to
-a CTRW continuum limit process, represented by a general bivariate
-Langevin equation $(Y_u, Z_u)$.
-The stochastic process convergence guarantees the convergence of
-probability distributions to the solutions $P(y,t)$ of
-\eqref{eq:FFPE}, which translates into the consistency of the algorithm.
-In Section 4 we calculate the probability distributions of the DTRW.
-Because of the Semi-Markov property, this can be done via genearlized
-master equations in a higher dimensional state space which tracks the
-time since the last jump.
-In Section 5 we consider an interface problem, where the anomalous
-exponent interpolates continuously between two different anomalous
-exponents for each half axis. Section 6 concludes.
+This paper is organized as follows: 
 
+Section 2: 
+: We give a short account of bivariate Langevin dynamics
+  characterizing CTRW limit processes.
+  
+Section 3: 
+: We construct a sequence of DTRWs which converges to
+  a CTRW continuum limit process, represented by a general bivariate
+  Langevin equation $(Y_u, Z_u)$. 
+  
+Section 4: 
+: We calculate the probability distributions of the DTRW 
+  via genearlized master equations in an extended tate space.
+  
+Section 5: 
+: We study three novel use-cases, namely an interface problem, 
+  spatially varying temporal drift, and inverse subordinators.  
+
+Section 6: 
+: concludes.
 
 
 # Stochastic solution to Fokker-Planck equation with memory
@@ -198,20 +241,21 @@ $$
 m(R) = \int_{u_1}^{u_2} \int_{w_1}^{w_2} \nu(w |Y_u)\,dw\, du
 $$
 
-for some _Levy measure_ $\nu(dw | y)$, which may vary with $y$.
+for some _Levy measure_ with density $\nu(w | y)$, which may vary with $y$.
 Recall that a Levy measure is defined by the requirement
 $$
-\int_0^\infty \min\{1, w\} \nu(dw | y) < \infty.
+\int_0^\infty \min\{1, w\} \nu(w | y)\,dw < \infty.
 $$
 For instance, letting the fractional exponent $\beta(y) \in (0,1]$ depend on space,
 choosing $\nu(w | y) = \frac{\beta(y) w^{-1-\beta(y)}}{\Gamma(1-\beta(y))}$
 results in $Z_u$ having independent increments, which follow the stable distribution
 with continuously varying exponent $\beta(Y_u)$ [@Straka17].
 
-It will be convenient to introduce the tail function of the Levy measure
-$$
-\overline \nu(w | y) := \int_w^\infty \nu(dw | y), \quad w > 0.
-$$
+It will be convenient to introduce the space-dependent tail function of the Levy measure
+\begin{align}
+\label{eq:nubar}
+\overline \nu(w | y) := \int_w^\infty \nu(w' | y)\,dw', \quad w > 0.
+\end{align}
 and its Laplace transform
 $$
 \hat{\overline \nu}(\lambda | y) = \int_0^\infty \overline \nu(w|y)\,e^{-\lambda w}\,dw.
@@ -221,6 +265,11 @@ $$
 \hat V(y,\lambda) := \int_0^\infty V(y,s)\,e^{-\lambda s}\,ds
 = \frac{1}{\lambda [d(y) + \hat{\overline \nu}(\lambda | y)]}
 $$
+The renewal function represents the mean occupation time of $Z_u$ conditional
+on $y$ [@MMMPS12]; 
+that is, assuming that $y$ was frozen, 
+$V(y,s)$ is the mean amount of auxiliary time $u$ for which $Z_u < s$.
+
 As shown by @BaeumerStraka16, the Fokker--Planck equation with memory
 \eqref{eq:FFPE} has, under certain continuity conditions on the four coefficient
 functions, a unique solution $P(y,t)$.
@@ -232,16 +281,38 @@ X(t) := Y_{E(t)}, \quad E(t) := \inf\{u: Z_u > t\}.
 \end{align}
 $X(t)$ is also called a CTRW limit or the _continuum limit_ of the CTRW.
 
-We note that the 4-tuple $\left(a(y,t), b(y,t), d(y), \overline \nu(w, y)\right)$
+## Coefficient representation {-}
+
+We note that the 4-tuple 
+\begin{align} \label{eq:coeff-tuple}
+\left(a(x,t), b(x,t), d(x), \overline \nu(w, x)\right)
+\end{align}
 concisely represents the Langevin process
 \eqref{eq:dY}--\eqref{eq:dZ}.
 However, the representation is only unique up to a multiplicative factor: 
-if every element in the 4-tuple is, say, doubled, 
+if every element in \eqref{eq:coeff-tuple}, say, doubled, 
 then the speed of $(Y_u, Z_u)$ is doubled. But, this has no effect on 
 the distribution of the points that are traversed by $(Y_u,Z_u)$, and 
-hence does not affect the distribution of the trajectories $X(t)$. 
-Hence if we assume that $d(y)$ is bounded, then we can also assume 
-WLOG that $0 \le d(y) \le 1$. 
+hence does not affect the distribution of the trajectories $X(t)$
+[@Straka17]. 
+
+Assuming that the coefficients are all bounded functions in $(x,t)$, 
+we hence divide by a large enough number so that $a(x,t) < 1$ for all $(x,t)$. 
+(At $a(x,t) = 1$, numerical instabilities may occur, which are smoothed out 
+if e.g. $a(x,t) < 0.9$ throughout the domain.)
+In the derivation of our algorithm, we will transform the tuple \eqref{eq:coeff-tuple}
+as follows: Define $\theta(x) \in [0, 1)$ via $d(x) = \theta(x) / (1-\theta(x))$. 
+Then multiply the tuple \eqref{eq:coeff-tuple} by $(1-\theta(x))$, to get 
+the transformed tuple
+\begin{align} \label{eq:coeff-tuple-trans}
+\left((1-\theta(x)) a(x,t), (1-\theta(x)) b(x,t), \theta(x), 
+(1-\theta(x)) \overline \nu(w, x)\right).
+\end{align}
+
+
+
+Hence if we assume that $d(y)$ is bounded, then we may also assume 
+WLOG that $0 \le d(x) \le 1$ and $a(x,t) < 1$. 
 
 Finally, we add the technical but non-restrictive condition 
 \begin{align} \label{eq:blowup}
@@ -253,16 +324,28 @@ which prevents the Levy measure from blowing up in regions where
 $\beta(y) \uparrow 1$, see Lemma \ref{lem:psi}.
 
 
+### Remark {-}
+
+So-called Lipschitz and Growth conditions on the coefficients 
+$\left(a(x,t), b(x,t), d(x), \overline \nu(w, x)\right)$
+guarantee the existence of the Langevin process $(Y_u, Z_u)$ 
+[@Applebaum, Chapter 6].
+These entail continuity of the parameters. 
+It is generally difficult to ensure existence of $(Y_u, Z_u)$ without 
+these conditions. For a recent approach of constructing the CTRW limit $X(t)$ 
+without this condition, see @Orsingher2018.
+
+
 # Discrete Langevin Dynamics
 
 Let $c > 0$ be a scaling parameter, and define a spatio-temporal grid $\#$
-with spacings $\chi = c^{-1/2}$ and $\tau = c^{-1/\alpha_0}$, where
-$\alpha_0 \in (0,1)$ is some reference value to be defined later.
+with spacings $\chi \sim c^{-1/2}$ and $\tau = 1/c$.
 Assuming for simplicity that space is one-dimensional, the grid is embedded
 in space-time $\mathbb R \times [0, \infty)$.
 In this section we define for each $c > 0$ a Langevin process
 $(Y^{(c)}_u, Z^{(c)}_u)$ with state space $\#$ such that as $c \to \infty$,
-$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$.
+$(Y^{(c)}_u, Z^{(c)}_u)$ converges to $(Y_u, Z_u)$ in the sense of stochastic 
+processes.
 
 It is clear that $(Y^{(c)}_u, Z^{(c)}_u)$ must be a jump process hopping on $\#$.
 Since $Y_u$ has continuous sample paths, nothing is gained by allowing
@@ -277,37 +360,41 @@ the increments of $Y^{(c)}_u$ resp. $Z^{(c)}_u$.
 
 ## Waiting time distribution
 
-First, define a random waiting time $\tilde W^{(c)}_y$ with the following tail function:
-$$
-\mathbf P(\tilde W^{(c)}_y > w) 
-= 1 \wedge \frac{\overline \nu(w | y)}{c (1-d(y))}, \quad w > 0,
-$$
-where $a \wedge b := \min\{a, b\}$.
-Then let $W^{(c)}_y$ be a random waiting time which has the value 
-$\tau$ with probability $d(y)$ and $\tilde W^{(c)}_y$ with probability $1-d(y)$. 
-Finally, discretize $W^{(c)}_y$ by rounding up to the nearest multiple of 
-$\tau$. This results in a random discrete waiting time with the tail 
-function 
+We define the discrete waiting time distribution $\psi^{(c)}(j\tau | x)$ 
+as a mixture of a "local" and a "nonlocal" component:
 \begin{align}
-\Psi^{(c)}(w|y) 
-= d(y) \mathbf 1\{w \le \tau\} 
-+ (1-d(y)) \wedge \frac{\overline \nu(w_\tau | y)}{c},
+\psi^{(c)}(j\tau | x) := \theta(x) \psi^{{(c)}}_{\rm loc}(j\tau | x) 
++ (1-\theta(x)) \psi^{(c)}_{\rm nonloc}(j\tau|x), \quad j=1,2,\ldots
+\label{eq:def-psi}
 \end{align}
-where $w_\tau$ be the smallest lattice point which is not smaller than $w$; 
-i.e.
+where, by definition, $0 \le \theta(x) \le 1$.
+The local part is simply deterministic, with all mass at $\tau$, that is 
+$\psi^{(c)}_{\rm loc}(\tau | x) = 1$ and $\psi^{(c)}_{\rm loc}(k\tau | x) = 0$
+for $k=2, 3, \ldots$.
+The nonlocal part is the truncated, normalized and discretized
+Lévy measure: First, define the function
+$$
+H^{(c)}(w | x) = 1 \wedge \frac{\overline \nu(w|x)}{c},
+$$
+where $a \wedge b := \min\{a, b\}$. 
+For convenience, we say that $\overline \nu(w|x) = \infty$ if $w \le 0$.
+Then, define $w_\tau$ as the largest grid point not larger than $w$:
 \begin{align}
-w_\tau = j\tau \ge w > (j-1)\tau.
+w_\tau := j\tau, \quad \text{ where }  \quad j\tau \le w < (j+1)\tau.
 \label{eq:w-tau}
 \end{align}
-It is clear that for fixed $y$ and $c$,
-$t \mapsto \Psi^{(c)}(t|y)$ is a step function decreasing from $1$
-to $0$ and is hence indeed the tail function of some discrete probability
-measure $\psi^{(c)}(j\tau|y)$ given by
-\begin{align} \label{eq:def-psi}
-  \psi^{(c)}(j\tau | y) = \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y),
-  \quad j = 1, 2, \ldots
+
+
+Finally, note that $\Psi^{(c)}_{\rm nonloc}(w|x) := H^{(c)}(w_\tau | x)$ is
+piecewise constant with jumps in $\tau, 2\tau, \ldots$, and decreasing from 
+$1$ to $0$.
+We take this function to be the tail function of $\psi^{(c)}_{\rm nonloc}(w|x)$, 
+that is, 
+\begin{align}
+\psi^{(c)}_{\rm nonloc}(j\tau | x) = H^{(c)}((j-1)\tau | x) - H^{(c)}(j\tau | x), 
+k = 1, 2, \ldots.
 \end{align}
-Note that $\psi^{(c)}(0\tau | y) = 1-1= 0$, meaning that waiting times are always
+We then have $\psi^{(c)}(0\tau | y) = 0$, meaning that waiting times are always
 strictly positive.
 
 
@@ -323,7 +410,7 @@ original location), and to jump right, are given by
 \quad
 n(x,t) = 1 - a(x,t)/\bar a,
 \quad
-r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}.
+r^{(c)}(x,t) = \frac{a(x,t) + \chi b(x,t)}{2 \bar a}
 \end{gather*}
 where $x$ is the location of the walker before the jump, and $t$ is the time at which the jump occurs.
 In order for $r, n$ and $\ell$ to be between $0$ and $1$,
@@ -339,34 +426,38 @@ $\ell^{(c)}(x,t)$, $n(x,t)$ and $r^{(c)}(x,t)$ define a jump kernel on $\#$,
 which defines the distribution of jump $z$ and waiting time $w$ given the current
 location of the walker at $x$ at time $t$:
 \begin{align}
-K^{(c)}(z,w|x,t) = \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
+\begin{split}
+& K^{(c)}(z,w|x,t)
+\\
+&= \left[r^{(c)}(x,t+w)\delta_{+\chi}(z)
 + n(x, t+w) \delta_0(z)
 + \ell^{(c)}(x, t+w) \delta_{-\chi}(z)\right]
 \psi^{(c)}(w|x).
 \label{eq:K}
+\end{split}
 \end{align}
 Note that we evaluate the jump probabilities at the end $t+w$ of a waiting time,
 as is common for CTRWs.
-Th. 2.1 in @Straka17 specifies conditions on $K^{(c)}(z,w|x,t)$ which imply
-the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$, which we repeat
+Th. 2.1 in [@Straka17] specifies conditions on $K^{(c)}(z,w|x,t)$ which imply
+the convergence of $(Y^{(c)}_u, Z^{(c)}_u)$ to $(Y_u, Z_u)$ and which we repeat
 here for convenience:
 \begin{align} \label{eq:cond1}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z K^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
+\iint\limits_{|z|< \epsilon,\,0<  w < \epsilon} z cK^{(c)}(z,w | x,s)\,dz\,dw &= b(x,s)
 \\ \label{eq:cond2}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 K^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
+\iint\limits_{|z|< \epsilon, \,0<w < \epsilon} z^2 cK^{(c)}(z,w | x,s)\,dz\,dw &= a(x,s)
 \\ \label{eq:cond3}
 \lim_{\epsilon \downarrow 0} \lim_{c \to \infty}
-c \iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w K^{(c)}(z,w | x,s)\,dz\,dw &= d(x)
+\iint\limits_{|z|< \epsilon, \,0<w < \epsilon} w cK^{(c)}(z,w | x,s)\,dz\,dw &= \theta(x)
 \\
 \label{eq:cond4}
 \lim_{c \to \infty}
-c \iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) K^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
+\iint\limits_{z \in \mathbb R, w \ge 0} g(z,w) cK^{(c)} (z,w | x,s)\,dz\,dw &= \int_{w > 0} g(0,w) \nu(w|x)\,dw
 \end{align}
 for any bounded continuous function $g(z,w)$ which vanishes in a neighbourhood of the origin.
 We give calculations in the appendix which confirm that the above four
-conditions indeed hold for $K^{(c)}(z,w|x,t)$.
+conditions indeed hold for $K^{(c)}(z,w|x,t)$ as defined in \eqref{eq:K}. 
 
 ### Remark {-}
 
@@ -386,17 +477,6 @@ as $c \to \infty$.
 
 
 # Semi-Markov numeric scheme
-
-As described at the beginning of Section 3,
-the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
-for which we write $X^{(c)}(t)$. By Theorem 2.2 in @Straka17,
-$X^{(c)}(t)$ converges to the CTRW coninuum limit process $X(t)$
-from \eqref{eq:CTRWlimit}.
-For large $c$, the probability distributions of $X^{(c)}(t)$ may hence be
-taken as approximations of $P(y,t)$.
-In this section, we derive master equations for the probability distributions
-of $X^{(c)}(t)$.
-
 
 As described at the beginning of Section 3,
 the discrete Langevin process $(Y^{(c)}_u, Z^{(c)}_u)$ has an embedded DTRW,
@@ -422,7 +502,8 @@ is defined by the jump kernel \eqref{eq:K} as follows: first, a waiting
 time is drawn from the distribution $\psi^{(c)}(w|x)$; then a jump left or right or
 a self-jump is drawn from the probabilities $\ell^{(c)}(x,t+w)$, $r^{(c)}(x,t+w)$
 and $n(x,t+w)$.
-The Semi-Markov approach embeds $X^{(c)}(t)$ into a Markov process as follows:
+The Semi-Markov approach embeds $X^{(c)}(t)$ into a Markov process
+[@Meerschaert2014]:
 Define the _age_ of a walker as the time that has passed since he last arrived
 at his current location. In each timestep $\tau$, either the waiting time has
 not expired yet, in which case no jump occurs and age is increased by $\tau$;
@@ -439,12 +520,10 @@ $$
 \mathbf P(W > (j + 1)\tau | W > j \tau) = h_{i,j+1} / h_{i,j}.
 $$
 That is, if at time $k\tau$, position and age are $(x_k, v_k) = (i,j)$,
-then at time $(k+1)\tau$
+then at time $(k+1)\tau$ the pair $(x_{k+1}, v_{k+1})$ is equal to 
 
-* with probability $h_{i,j+1} / h_{i,j}$ we have
-  $(x_{k+1}, v_{k+1}) = (x_k, v_k + 1)$, and
-* with probability $1 - h_{i,j+1} / h_{i,j}$ we have
-  $(x_{k+1}, v_{k+1}) = (x_k + \zeta, 0)$,
+* $(x_k, v_k + 1)$ with probability $h_{i,j+1} / h_{i,j}$, and
+* $(x_k + \zeta, 0)$ with probability $1 - h_{i,j+1} / h_{i,j}$,
 
 where $\zeta \in \{-1, 0, +1\}$ with probabilities $\ell^{(c)}(i\chi, (k+1)\tau)$,
 $n(i\chi, (k+1)\tau)$ and $r^{(c)}(i\chi, (k+1)\tau)$.
@@ -483,7 +562,9 @@ $$
 \mathbf P(X^{(c)}_t = i\chi) =: \rho^k_i = \sum_{j=0}^J \xi^k_{i,j},
 \quad k = \lfloor t /\tau \rfloor.
 $$
-Here we note that $X^{(c)}(t) = X^{(c)}(t_\tau)$, where $t_\tau$ is
+Here we note that 
+$X^{(c)}(t) = X^{(c)}(t_\tau) = X^{(c)}(\lfloor t/\tau \rfloor \tau)$, 
+where $t_\tau$ is
 the left-nearest lattice point defined exactly as $w_\tau$ in \eqref{eq:w-tau}.
 
 
@@ -494,8 +575,11 @@ lattice of ages.  If we cannot allocate
 $\lfloor T/\tau \rfloor$ lattice points, where $T$ is the largest time of interest, then it is possible that the age of walkers may reach the end of the lattice. In this case, and if the walker does not jump in the next time step, we do not increase its age any further, until it eventually does jump:
 $$
 \xi^{k+1}_{i,J} = \frac{h_{i,J}}{h_{i,J-1}} \xi^k_{i,J-1}
-+ \frac{h_{i,J+1}}{h_{i,J}} \xi^k_{i,J}.
++ \frac{h_{i,J+1}}{h_{i,J}} \xi^k_{i,J},
 $$
+The first summand being walkers whose age has reached $J$ in the current 
+time step, and the second summand being walkers of age $J$ who do not jump 
+in the current time step.
 Finally, assuming that the spatial coordinates of the lattice go from
 $-I$ to $I$, we implement Neumann boundary conditions by placing a walker
 back on the boundary whenever it would otherwise have jumped off the lattice,
@@ -528,9 +612,9 @@ Due to the convergence \eqref{eq:CTRW-J1}, we have
   \quad \text{ as } c \to \infty,
 \end{align}
 for all bounded continuous real-valued $f$ defined on $\mathbb R$.
-Assuming that the distribution of $X_t$ has a probability density,
-we may replace $f$ by an indicator function of an interval $(a,b)$,
-and \eqref{eq:consistency} reads
+If the distribution of $X_t$ has a probability density,
+then the above convergence also holds if $f$ is an indicator function 
+of an interval $(a,b)$, and reads
 \begin{align}
   \sum_{a < i\chi < b} \rho_i^{\lfloor t / \tau \rfloor}
   \longrightarrow
@@ -558,50 +642,432 @@ in @Angstmann2015a, if we choose $h_{i,j} = \Psi(j)$.
 
 # Examples {#sec:examples}
 
-Within this semi-Markov framework, we may now implement the above numeric scheme to calculate approximations of the densities of a variety of CTRW limits. The generality of the scheme provides a unified approach for calculating the densities of any CTRW limit. By allowing for various coefficients $a(y,t)$, $b(y,t)$, $d(y)$, waiting time distributions $\psi (\omega | y)$, spatially varying exponents $\beta (y)$ and various initial residence times (see [@Gill2016]) these limtis are able to model the underlying CTRW of a wide set of subdiffusive systems. 
-
-### Spatially varying exponent {-}
-
-For simplicity we let the coefficients $b \equiv 0$ and $d \equiv 0$. For the diffusivity we have $a(x) = T_0^{-\beta(x)}$ where $T_0$ is the time scale and waiting time distribution tail function $\Psi(x,t) = \frac{t^{-\beta(x)}}{\Gamma (1-\beta(x))}$. 
-
-For the variable order $\beta(x)$ we consider a system where the subdiffusion slows down in one direction and speeds up in the other direction, defining $\beta(x) = 0.25 + 0.5/(1+e^{-x})$ so that $\lim_{x\to -\infty} \beta (x) = 0.25$ and $\lim_{x\to \infty} \beta (x) = 0.75$. Figure [fig:varyexp1] shows the evolution of the density $P(x,t)$ at multiple times. The distinctive cusp shape of subdiffusion (with constant exponent) is present at small times, however the long-time behaviour shows the aggregation which begins to occur towards areas of smaller exponent $\beta(x)$ i.e. the particles aggregates towards and become trapped in the slower end of the system.
+In this section, we apply our algorithm to four novel examples. 
+All source code is openly available at \url{https://github.com/strakaps/VaryExp} [@varyExp]. 
+Computations and plots were produced using the `R` programming
+language [@R] using the packages `rmarkdown` [@rmarkdown] 
+and `rticles` [@rticles].
 
 
-```{r varyexp1}
+
+## Continuous interface problem
+
+
+```{r interface, include=TRUE, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:interface}Continuous interface problem. Coefficients are as given in the text, and $c = 400$."}
 source("../R/varyExp-DTSM.R")
-source("../R/varyExp-varyingexp1.R")
+T0 <- 1
+alpha <- function(x)
+  0.44 * exp(-x^2) + 0.3 + 0.45 / (1 + exp(-2 * x))
+nuTail <- function(x,t) {
+  if (t <= 0)
+    Inf
+  else
+    (t^(-alpha(x))  )/gamma(1-alpha(x))
+}
+a <- function(x,t) 
+  0.9 / T0^(alpha(x))
+b <- function(x,t) 
+  0.1 * dnorm(x, sd=0.2) / T0^(alpha(x))
+d <- function(x) 0
+
+snapshots <- 2^(-1:3)
+
+out <-
+  DTSM(
+    c = 400,
+    nuTail = nuTail,
+    a = a,
+    b = b,
+    d = d,
+    snapshots = T0 * snapshots
+  ) %>% rho_df()
+
+out %>% 
+  gather(what, density,-x) %>%
+  ggplot(aes(x = x)) +
+  geom_line(aes(y = density, col = what)) + 
+  geom_line(
+  data = out %>% mutate(alpha = alpha(x)) %>% select(x, alpha) %>%
+    add_column(what = "alpha"),
+    aes(x = x, y = alpha, col = "alpha"),
+    linetype = 2
+  ) + 
+  theme(legend.title = element_blank()) + 
+  ggtitle("Inhomogeneous waiting times")
 ```
 
-### Continuous interface {-}
+@Korabel2010 have studied a one-dimensional subdiffusive lattice with 
+exponent $\beta = 0.3$ for $x<0$ and $\beta = 0.75$ for $x>0$, where at the 
+interface ($x=0$) the waiting time is exponentially distributed. 
+Even if particles are biased to jump to the right at $x=0$ and thus 
+the net drift becomes positive, 
+in the long-time limit _all particles end up in the left half_. 
 
-In [Korabel2010], the authors modelled a subdiffusive system with a discontinuous exponent $\beta = 0.3$ for $y<0$ and $\beta = 0.75$ for $y>0$, while at the interface ($y=0$) the particles wait an exponentially distributed amount of time, and observed that in the long-time limit all particles end up in the left half. Here we consider a variable order system with continuous $\beta (y) = 0.55e^{-y^2} + 0.15 + 0.5/(1+e^{-2y})$, noting that $\lim_{y\to -\infty} \beta (y) = 0.15$, $\lim_{y\to \infty} \beta (y) = 0.65$, while at the interface ($y=0$) the system is near-diffusive with $\beta = 0.95$. Figure [fig:varyexp2] shows the evolution of the density $P(y,t)$ of the system. At small times we observe two peaks reflecting the trapping that occurs either side of the interface, however in the long-time we can see the aggregation of all particles towards the left hand side ($y<0$) which has lower exponent $\beta$.
+Here we consider a continuous medium that mimics this setup with the
+coefficients $(\overline \nu(w|x), d(x), a(x,t), b(x))$ chosen as follows: 
+
+\begin{align*}
+\overline \nu(w|x) &= \frac{w^{-\alpha(x)}}{\Gamma(1-\alpha(x))} \text{ where }
+\alpha (x) = 0.45e^{-x^2} + 0.3 + 0.45/(1+e^{-2x}), 
+\\
+d(x) &\equiv 0, 
+\quad 
+a(x,t) \equiv 1, 
+\quad 
+b(x,t) = 0.1 * \phi(x | 0, 0.2)
+\end{align*}
+where $\phi(x | \mu, \sigma)$ denotes the probability density of the 
+Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
+Note that $\alpha(x,t)$ is chosen so that it approaches $0.3$ for large negative 
+$x$, $0.75$ for large positive x and remains just under $1$ near $x=0$. 
+
+Figure \ref{fig:interface} shows the evolution of the density $P(y,t)$ 
+with a delta function initial condition. 
+At small times we observe two peaks reflecting the trapping that occurs 
+either side of the interface. For late times, one begins to see the aggregation of all 
+particles towards the left hand side ($x<0$) where trapping is stronger
+[@Savov2018; @Fedotov2012].
 
 
-```{r varyexp2}
-source("../R/varyExp-varyingexp2.R")
+@Straka17 shows that changing time units from $T_0 = 1$ to $T_0 = 2$ results 
+in the the updated diffusivity and drift coefficients 
+\begin{align*}
+a_{\beta(x)}(x,t) = \frac{a(x,t)}{T_0^{-\alpha(x)}}, 
+\quad 
+b_{\beta(x)}(x,t) = \frac{b(x,t)}{T_0^{-\alpha(x)}},
+\end{align*}
+leading to spatially inhomogeneous temporal scaling. 
+We confirm this by computing probability densities for the parameter tuple
+$\left( a_{\alpha(x)}(x,t), b_{\alpha(x)}(x), d(x), \overline \nu(w|x)\right)$, 
+at the timestamps multiplied by $T_0 = 2$, and plotting the absolute differences
+(Figure \ref{fig:difference}). 
+The absolute values of differences are mostly all below 0.015, 
+and remain stable after 8 units of time,
+indicating that indeed the same densities are calculated in both cases. 
+
+
+```{r difference, eval=TRUE, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:difference}Absolute difference between densities, calculated at corresponding timestamps, for two choices of  time scale $T_0 = 1$ and $T_0 = 2$."}
+T0 <- 2
+
+out2 <-
+  DTSM(
+    c = 400,
+    nuTail = nuTail,
+    a = a,
+    b = b,
+    d = d,
+    snapshots = T0 * snapshots
+  ) %>% rho_df()
+diff_df <- out2[-1] - out[-1]
+names(diff_df) <- c("t1", "t2", "t3", "t4", "t5")
+diff_df %>% add_column(x=out$x) %>% gather(timestamp, difference, -x) %>%
+  ggplot(aes(x=x, y=difference, col=timestamp)) + geom_line() + 
+  ggtitle("Difference of solutions at two different time scales")
+```
+
+## Temporal drift $d(x)$
+
+CTRW limits with positive temporal drift $d(x)$ as per representation 
+\eqref{eq:dY}--\eqref{eq:dZ} have been studied by @StrakaThesis:
+In the case where $Z_u$ is a $\beta$ stable Lévy flight, 
+$Z_u$ grows superlinearly at the rate $u^{1/\beta}$ both in the short time 
+limit $t \downarrow 0$ and the long time limit $t \uparrow \infty$. 
+Accordingly, the inverse stable subordinator 
+$E(t)$ in \eqref{eq:CTRWlimit} grows as $\propto t^\beta$, 
+also both in the short time and long time limit.
+Adding a drift to $Z_u$, e.g. $d(x) \equiv d > 0$, means that $Z_u$ now grows 
+linearly $\propto d\,u$ at short times.
+Accordingly, its inverse $E(t)$ also grows linearly as $\propto t/d$ at short times.
+The growth behaviour at late times of $Z_u$ and $E(t)$ remains dominated by 
+large jumps resp. long rests, and remains $\propto u^{1/\beta}$ resp. $\propto t^\beta$.
+Hence the addition of the drift $d > 0$ means that the slope of $E(t)$ is no 
+longer infinite, and thus the speed of $E(t)$ is tempered at very short times. 
+Figure \ref{fig:temporal-drift} illustrates the effect of increasing the 
+temporal drift. As can be seen, the jump component of $Z_u$ becomes less 
+pronounced as the temporal drift increases, increasing resemblance to a 
+Gaussian process and slowing down the dynamics. 
+Figure \ref{fig:varying-temporal-drift} shows anomalous diffusion 
+with exponent $0.7$ with spatially varying temporal drift $d(x)$. Particles accumulate 
+in patches of low mobility, corresponding to high $d(x)$. 
+
+```{r temporal-drift, echo=FALSE, message=FALSE, fig.height=4, fig.cap="\\label{fig:temporal-drift}Increasing temporal drift $d(x)$ decreases the speed of the diffusion and increases resemblence to a standard Gaussian process. Parameters: $a(x,t) = 0.8, b(x,t) = 0, \\overline\\nu(w|x)=w^{-0.7}/\\Gamma(1-0.7), c=100, \\tau = 1/100, \\chi = 1/10$."}
+d_value_to_df <- function(d_value){
+  out <-
+    DTSM(
+      snapshots = 5,
+      a = function(x, t)
+      0.8,
+      b = function(x, t)
+      0,
+      d = function(x)
+      d_value
+    ) %>%
+    rho_df()
+  names(out) <- c("x", "density")
+  out %>% add_column(d = paste0(d_value))
+}
+plyr::ldply(2^(-2:2), d_value_to_df) %>% 
+  ggplot(aes(x=x, y=density, col=d)) + geom_line() + 
+  ggtitle("Temporal drift")
 ```
 
 
-### Varying mixture {-}
 
-For constant $a$, $b$ and $d$ with $d \geq 0$ and $\nu(\omega|y) \equiv \nu(\omega)$, it can be shown that [equation 1.3] can be written as a special case of a Distributed order FFPE with a distribution over the orders of $\beta$ and 1 [equation (3.8) in JphysA paper]. This leads to a mixture of orders with the smaller one $\beta$ dominating the long-time behaviour. The behaviour of such a process is similar to that of a CTRW with two different underlying waiting time densities $\psi_1(t)$ and $\psi_2(t)$ [Sandev paper].
-
-Here we are now able to consider a qualitatively similar mixed type fractional diffusion by defining $\bar \nu(\omega|y) = p(y) \bar \nu_{\beta_1}(\omega) + (1-p(y)) \bar \nu_{\beta_2}(\omega)$ where $y, p(y) \in [0,1]$. The weight function $p(y)$ allows us  to vary the bifractional mixture in space. Figure [fig:varyingmixture] shows the resulting PDF $P(y,t)$ when the weight function follows a logistic function $p(y) = 1/(1+e^{-10y + 5})$ on $y\in[0,1]$ and initial condition is $P(dy,0) = \delta_0 (dy)$. Note that as $t \to \infty$, $P(y,t) \to \delta(y-1)$ (see [Fedotov/Falconer]), hence [fig:varyingmixture] represents the intermediate evolution of the density, the speed of which is controlled by parameters $\beta_1$, $\beta_2$ and $p(y)$.
-
-```{r varymixture}
-source("../R/varyExp-varyingmixture.R")
-```
-
-### Spatially varying Tempering {-}
-
-The tempered Tail function is obtained by multiplying it by an exponential term $e^{-\theta  t}$. This yields the new Tail function $\Psi(x,t) = \frac{t^{-\beta(x)} e^{-\theta  t}}{\Gamma (1-\beta(x))}$ where $\theta \geq 0$ and we can see that this Tail function will now be integrable. Note that for $\theta = 0$ this reduces to the original tail function, and observe that for small $t$ and small $\theta$ dynamics of the system will still appear subdiffusive, while for large $t$ they will approach diffusive. Here we are now able to generalize this to allow the tempering parameter $\theta (x) \geq 0$ to be spatially varying so that the effect of this tempering may not be homogeneous throughout the system. Taking the variable order to be the same as in Figure \ref{fig:varyexp1} $\beta(x) = 0.25 + 0.5/(1+e^{-x})$, we consider the inhomogeneous tempering $\theta (x) = 1/(1+e^{0.5x})$. Figure \ref{fig:varytempering} illustrates the density $P(x,t)$ for this case, where we can see that particles begin to accumulate where tempering is low $(x>0)$. Noting that the variable exponent $\beta(x)$ is lower for $x<0$, this suggests that the effect of the tempering parameter $\theta (x)$ is stronger than that of $\beta(x)$.
-
-```{r varytempering}
-source("../R/varyExp-varyingtempering.R")
+```{r varying-temporal-drift, message=FALSE, echo=FALSE, fig.height=4, fig.cap="\\label{fig:varying-temporal-drift}A system with a spatially varying temporal drift $d(x) = 10 * \\sin^2(2\\pi x)$. Particles accumulate in the slow patches where $d(x)$ is high, while trapping is homogeneous in space. Other parameters: $a(x,t) = 0.9$, $b(x,t) = 0$, $\\overline\\nu(w|x) = w^{-0.7}/\\Gamma(1-0.7)$, $c = 900$."}
+d <- function(x,t){
+  10 * (sin(2*pi*x))^2
+}
+DTSM(xrange = c(-1,1), c = 30^2, d = d, snapshots = 4^(-1:1)) %>% rho_df() %>% gather(timestamp, density, -x) %>%
+  ggplot(aes(x=x, y=density, col=timestamp)) + geom_line() + 
+  ggtitle("Spatially varying temporal drift")
 ```
 
 
 
+## Variably distributed fractional order
+
+Anomalous diffusion with _distributed order_ assumes a mixing probability 
+distribution of the anomalous parameter $\beta$ 
+with density $p(\beta)$ on the interval $(0,1]$.
+As illustrated by @Sandev2015, the position of the distributed order fractional 
+operator is decisive for the long-term dynamics. 
+The "natural form" uses the Caputo fractional derivative:
+$$
+\int_0^1 p(\beta) _CD_t^\beta P(y,t) \,d\beta = \frac{1}{2}\frac{\partial^2}{\partial y^2} P(y,t)
+$$
+Here the mean squared displacement grows proportionally to $t^{\beta_1}$ for early 
+times and proportionally to $t^{\beta_2}$ for late times, where $\beta_1$ is at 
+the left end of the support of $p(\beta)$ and $\beta_2$ at the right end. 
+The opposite behaviour occurs for the "modified form", with Riemann-Liouville
+fractional derivative: 
+$$
+P(y,t) = \int_0^1 p(\beta) _{RL}D_t^{1-\beta}\frac{1}{2}\frac{\partial^2}{\partial y^2} P(y,t)\,d\beta
+$$
+The FFPE for CTRW limits \eqref{eq:FFPE} can be rewritten to the natural form, 
+assuming that all coefficients $(a, b, d, \overline \nu(w)$ are constant
+[compare with Eq.(3.8) in @Straka17 with delta-function initial condition
+and $\overline \nu(t) = t^{-\beta}/\Gamma(1-\beta)$]:
+\begin{align} \label{eq:natural-mixture}
+d\, \frac{\partial}{\partial t} P(y,t) + _CD_t^\beta P(y,t)
+= \mathcal L^* P(y,t)
+\end{align}
+which represents a mixture of the two orders $1$ and $\beta$, with weights 
+$d/(d+1)$ and $1/(d+1)$, after normalization. 
+
+We now vary the weights of the two orders in space: Assume a logistic weight 
+$p(y) = 1/(1+\exp(-2y)$ with scale $0.5$ for the exponent $1$, and the weight 
+$1-p(y)$ for the exponent $\beta = 0.7$. Then the dynamics are diffusive on 
+the far right-hand side, subdiffusive on the far left-hand side, and mixed
+at the interface near $0$, with continuous interpolation between the two 
+regimes. 
+This is summarized in the coefficient tuple
+$$
+\left( 0.9, 0, p(y), (1-p(y)) w^{-0.7} / \Gamma(1-0.7) \right).
+$$
+Note however that the CTRW limit specified by this tuple is **not** governed 
+by \eqref{eq:natural-mixture} with weights of $1$ and $\beta$ replaced by 
+$p(y)$ and $1-p(y)$, since the derivation of this equation assumes constant 
+coefficients. We deem it unlikely that a Caputo-type governing equation
+of the above dynamics exists. 
+The evolution of a system with point mass initial condition at the interface 
+$y=0$ is illustrated in Figure \ref{fig:varying-mixture}.
+
+
+```{r varymixture, include=TRUE, echo=FALSE, message=FALSE, fig.height=4, fig.cap="\\label{fig:varying-mixture}A variable mixture of subdiffusion ($\\beta_1 = 0.7$) and diffusion ($\\beta_2 = 1$). The two weights add to $1$, and the weight for $\\beta_2$ equals the logistic function with scale $1/2$, increasing from $0$ on the far left to $1$ on the far right."}
+p <- function(x)
+  1 / (1 + exp(-2 * x))
+nuTail <- function(x,t) {
+  if (t <= 0)
+    Inf
+  else
+    (1-p(x)) * (t^(-0.7)  )/gamma(1-0.7)
+}
+
+DTSM(nuTail = nuTail, d = p, snapshots = 2^(1:5)) %>%
+  rho_df() %>%
+  gather(time, density, -x) %>%
+  ggplot(aes(x=x, y=density, col=time)) + geom_line() + 
+  ggtitle("Spatially varying mixture")
+```
+
+
+## Inverse subordinators
+
+```{r invSubordinators, message=FALSE, echo=FALSE, warning=FALSE, fig.height=4, fig.cap="\\label{fig:invSubordinators}Probability densities for three different types of inverse subordinators, evaluated at time $t = 1$, with $c=900$."}
+
+stableTail <- function(x,w){
+  beta <- 0.7
+  w^(-beta) / gamma(1-beta)
+}
+
+tempStableTail <- function(x,w){
+  beta <- 0.7
+  gam <- 1
+  (w ^ (-beta) * exp(-gam * w) - gam * pracma::incgam(w, 1 - beta)) / gamma(1-beta)
+}
+
+c = 30^2
+snapshots = 1
+xrange = c(0,4/3)
+
+
+invStableDf <-
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c,
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 0,
+    nuTail = stableTail
+  ) %>% rho_df()
+
+invTempStableDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 0,
+    nuTail = tempStableTail
+  ) %>% rho_df()
+
+invStableDriftDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 1,
+    nuTail = stableTail
+  ) %>% rho_df()
+
+invTempStableDriftDf <- 
+  DTSM(
+    xrange = xrange,
+    initial_condition = "left",
+    snapshots = snapshots,
+    c = c, 
+    a = function(x,t) 0,
+    b = function(x,t) 2,
+    d = function(x,t) 1,
+    nuTail = tempStableTail
+  ) %>% rho_df()
+
+library(dplyr)
+
+joined_df <- invStableDf %>% 
+  inner_join(invTempStableDf, by='x') %>%
+  inner_join(invStableDriftDf, by='x') %>%
+  inner_join(invTempStableDriftDf, by='x')
+
+names(joined_df) <-
+  c("x",
+  "invStable",
+  "invTempStable",
+  "invStableDrift",
+  "invTempStableDrift")
+
+joined_df %>% gather(key="type", value="density", -x) %>%
+  ggplot(aes(x=x, y=density, col=type)) + geom_line() + 
+  ggtitle("Inverse Subordinators")
+```
+
+
+The time-changing process $E(t)$ from \eqref{eq:CTRWlimit} is well-known 
+in the statistical physics literature as an "inverse subordinator", 
+and denotes the random crossing time $u$ of a level $t$ by the stable 
+Levy flight $Z_u$. 
+Subordination is a widely used method to simulate paths of CTRW limits, 
+see e.g. [@invSubord] for an overview. 
+@Alrawashdeh2017 study the "inverse tempered stable subordinator", i.e. the 
+level crossing time for the _tempered_ stable Levy flight. 
+This process is an important tool for the study of "tempered subdiffusion", 
+see e.g. @Gajda2010.
+Using our algorithm, we may compute probability densities for _any_ inverse 
+subordinator $E(t)$, defined as the level crossing time of any strictly 
+increasing Levy flight. 
+
+To this purpose, observe that if $Y_u = u$ is linear motion, then we have 
+$X(t) = E(t)$ in \eqref{eq:CTRWlimit}. In order for $Y_u = u$ to hold, we 
+simply let $a(x,t) = 0$ and $b(x,t) = 1$. 
+In other words, an inverse subordinator is a CTRW limit 
+defined via a coefficient tuple
+$$
+\left( 0, 1, d, \overline \nu(w) \right)
+$$
+A set of jump probabilities which 
+achieves the limits in \eqref{eq:cond1} and \eqref{eq:cond2} is 
+$$
+\ell^{(c)}(x,t) = 0, \quad n^{(c)}(x,t) = 1 - \chi, \quad r^{(c)} = \chi.
+$$
+Figure \ref{fig:invSubordinators} shows probability densities of the 
+inverse stable, inverse tempered stable, inverse stable with drift and 
+inverse tempered stable with drift subordinators. These have coefficient 
+tuples with: $a =0$, $b = 1$;
+in the untempered resp. tempered case, the tail of the Levy measure is
+$$
+\overline \nu(w) = \frac{w^{-0.7}}{\Gamma(1-0.7)}
+\quad \text{ resp.} \quad 
+\overline \nu(w) = \frac{w^{-\beta} e^{-\gamma w} - \gamma \Gamma(1-\beta, w)}{\Gamma(1-\beta)}
+$$
+where we set the tempering parameter $\gamma = 1$;
+and for the non-drift resp. drift case, $d=0$ resp. $d=1$. 
+Since tempering makes the Levy flight $Z_u$ smaller, $E(t)$ becomes larger. 
+Moreover, a drift $d=1$ introduces the lower bound $u \le Z_u$, which 
+then becomes an upper bound $E(t) \le t/d$ for the inverse subordinator. 
+
+
+
+# Conclusion
+
+We have explored the use of an algorithm which is based on the Semi-Markov
+property of CTRW limits. 
+To achieve a concise and general representation of CTRW limits, we have 
+identified CTRW limits with a bivariate Langevin process, which in turn is 
+defined via a coefficient tuple $(a(x,t), b(x,t), d(x), \overline \nu(w|x))$. 
+Given any such tuple, we can compute probability densities of the CTRW limit 
+at any given time. 
+
+The main novel settings to which our algorithm applies are: 
+
+* Spatially varying exponents: we have explored two variants of an interface 
+  problem, with spatially varying anomalous exponent and spatially varying 
+  mixture of two anomalous exponents. 
+* Temporal drift: a drift added to the Levy flight $Z_u$ translates into 
+  a "speed limit" for the time evolution $E(t)$, a phenomenon which changes 
+  the behaviour at short times of CTRW limits and which is seemingly unknown
+  in the statistical physics literature. 
+* Inverse subordinators: these are main building blocks for anomalous diffusion 
+  problems, and our algorithm computes their densities in great generality. 
+  
+Contrary to popular knowledge, Semi-Markov processes 
+are not necessarily discontinuous piecewise constant processes 
+with state-dependent holding time distributions. 
+Semi-Markov processes include CTRW limits (with continuous sample trajectories), 
+an idea which we have exploited in this paper. 
+They also include _coupled_ CTRW limits [@StrakaHenry] and, 
+in a wider sense, Levy walks [@Magdziarz2015]. 
+The main idea from this paper, i.e.
+leveraging the Semi-Markov property to compute probability densities, 
+can also be applied to these types of processes, 
+which we deem an interesting future extension of the present work.
+
+
+## Acknowledgements {-}
+
+Peter Straka was supported by the Australian Research Council 
+with a Discovery Early Career Researcher Award (DECRA) DE160101147. 
+The authors thank Christopher Angstmann, Bruce Henry and James Nichols for 
+helpful discussions on discrete time random walks. 
+
+
+# Appendix {-}
 
 \appendix
 
@@ -634,7 +1100,13 @@ neighbourhood of $0$.
 \end{lemma}
 
 
-_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability distribution on the positive numbers and $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$ for all $w > 0$.
+_Proof._ \eqref{eq:psi2delta} holds since $\psi^{(c)}(w|y)$ is a probability
+distribution on the positive numbers with tail function 
+$$
+\Psi^{(c)}(w|x) = d(x) \mathbf 1\{w \le \tau\}  + (1-d(x)) H^{(c)}(w_\tau|x)
+$$ 
+which for all $w>0$ satisfies $\Psi^{(c)}(w|y) \to 0$ as $c \to \infty$
+(recall that $\tau = 1/c \downarrow 0$).
 For \eqref{eq:psi-non-local}, we first note that
 \begin{align} \label{eq:tail-to-zero}
 c \Psi^{(c)}(w|y)
@@ -642,7 +1114,7 @@ c \Psi^{(c)}(w|y)
 + [c(1-d(y))] \wedge \overline \nu(w_\tau) \to \overline \nu(w), 
 \quad c \to \infty,
 \end{align}
-for every $w > 0$ (recall that $tau \downarrow 0$). 
+for every $w > 0$.
 Assume that $g$ is differentiable, and let $\varepsilon > 0$ be small enough 
 so that $g(\varepsilon) = 0$. 
 Using (Lebesgue-Stieltjes) integration by parts, we may calculate
@@ -657,36 +1129,41 @@ c \int_0^\infty g(w) \psi^{(c)}(w|y)\,dw
 \end{align*}
 But bounded continuous functions can be approximated by differentiable 
 functions with arbitrary accuracy, so \eqref{eq:psi-non-local} follows.
-For \eqref{eq:psi-local}, first define 
-$n(\tau) = \lfloor \varepsilon / \tau \rfloor$.
-The left side of \eqref{eq:psi-local} computes to
+
+Finally, for \eqref{eq:psi-local}, we consider the local and nonlocal parts 
+$\psi^{(c)}_{\rm loc}(w|x)$ and $\psi^{(c)}_{\rm nonloc}(w|x)$
+separately. For the local part, we have 
+$$
+c \int_0^\varepsilon w\, \psi^{(c)}_{\rm loc}(w|x)\,dw
+= c \tau \to 1.
+$$
+For the nonlocal part, we 
+use Lebesgue-Stieltjes integration by parts:
 \begin{align*}
-&c \sum_{0 < j\tau \le \varepsilon} j\tau \psi^{(c)}(j\tau | y)
-= c \sum_{j=1}^{n(\tau)} j\tau \left[ \Psi^{(c)}((j-1)\tau | y) - \Psi^{(c)}(j\tau | y)\right]
+&\int_0^\varepsilon w\, \psi^{(c)}_{\rm nonloc}(w|x)\,dw
+=
+\int_0^\varepsilon w\, \left(-d\Psi^{(c)}_{\rm nonloc}(w|x) \right)
 \\
-&= c \sum_{j=0}^{n(\tau)-1} (j+1)\tau \Psi^{(c)}(j\tau | y)
-  -c \sum_{j=1}^{n(\tau)} j\tau \Psi^{(c)}(j\tau | y)
+&= - \left[ w \Psi^{(c)}_{\rm nonloc}(w|x)\right]_0^\varepsilon
++ \int_0^\varepsilon \Psi^{(c)}_{\rm nonloc}(w|x)\,dw
 \\
-&=  \tau c\Psi^{(c)}(0|y) 
-+ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
-- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
-\\
-&= \tau c \left[ d(y) + (1-d(y)) \wedge \frac{\infty}{c} \right]
-+ \sum_{j = 1}^{n(\tau)-1} \tau c\Psi^{(c)}(j\tau|y)
-- n(\tau) \tau c\Psi^{(c)}\left( n(\tau)\tau | y \right)
-\\
-&\to d(y) 
-+ \int_0^\varepsilon \overline \nu(w | y)\,dw 
-- \varepsilon \overline \nu(\varepsilon)
-= d(y) + \mathcal O\left(\frac{\varepsilon^{1-\beta}}{\Gamma(1-\beta)}\right),
+&= - \varepsilon \Psi^{(c)}_{\rm nonloc}(\varepsilon|x)
++ \int_0^\varepsilon \Psi^{(c)}_{\rm nonloc}(w|x)\,dw
 \end{align*}
-due to \eqref{eq:tail-to-zero}, limits of Riemann sums, and
-$\tau n(\tau) \to \varepsilon$.
-In the error term in the last line, we have used the technical assumption 
-\eqref{eq:blowup}.
+Multiplying with $c$ and letting $c \to \infty$, the right hand side 
+converges to 
+$$
+-\frac{\varepsilon \overline \nu(\varepsilon|x)}{1-d(x)}
++ \int_0^\varepsilon \frac{\overline \nu(\varepsilon|x)}{1-d(x)}\,dw
+$$
+where both terms are of order 
+$\mathcal O\left(\varepsilon^{1-\beta(x)} / \Gamma(1-\beta(x))\right)$
+according to the technical assumption \eqref{eq:blowup}.
+\eqref{eq:psi-local} now follows from the definition \eqref{eq:def-psi}
+of $\psi^{(c)}(w|x)$. 
 \qed
 
-The following lemma pertains to the jump distributions
+The final lemma pertains to the jump distributions
 in \eqref{eq:cond1}--\eqref{eq:cond4}: 
 
 \begin{lemma}\label{lem:jumps}
